@@ -1,17 +1,3 @@
-class Node {
-    constructor(id) {
-        this.id = id;
-    }
-}
-
-class Edge {
-    constructor(from, to, travelTimeFunction) {
-        this.from = from;
-        this.to = to;
-        this.travelTimeFunction = travelTimeFunction;
-    }
-}
-
 class timeDependentDijkstra {
     constructor(graph, startNode) {
         this.graph = graph;
@@ -89,4 +75,4 @@ class timeDependentDijkstra {
     }
 }
 
-export {Node, Edge, timeDependentDijkstra}
+export { timeDependentDijkstra }
