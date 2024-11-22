@@ -1,5 +1,7 @@
-class Customer {
+import { Node } from '../navigation/Node.js';
+class Customer extends Node {
   constructor(param) {
+    super(param.id);
     this.position = [];
     this.requirement = param.requirement;
     this.startTime = param.startTime;

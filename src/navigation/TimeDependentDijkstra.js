@@ -1,14 +1,12 @@
 class timeDependentDijkstra {
-    constructor(graph, startNode) {
+    constructor(graph) {
         this.graph = graph;
-        this.startNode = startNode;
         this.distances = {}; // 存储起始点到每个节点的最短时间  
         this.prevNodes = {}; // 存储到达每个节点的最短路径的前一个节点 
         this.visited = {}; // 标记节点是否已访问  
-        this.init();
     }
-    init() {
-        const queue = [{ node: this.startNode, time: 0 }]; // 优先队列，使用数组模拟  
+    generate(startNode, startTime) {
+        const queue = [{ node: startNode, time: startTime }]; // 优先队列，使用数组模拟  
 
         // 初始化距离、父节点和访问状态  
         for (const nodeId in this.graph) {
