@@ -1,14 +1,17 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <script type="module">
+      import VRPManager from "./src/vrp/VRPManager.js";
+      let manager = new VRPManager({
+        disasterPath: "data/disaster_area.json", 
+        roadPath: "data/road.json",
+        truckPath: "data/truck.json"
+      });
 
-<head>
-  <meta charset="utf-8" />
-  <script type="module" src="./examples/timeDependentDijkstra.js"></script>
-</head>
-
-<body>
-  毕业论文示例网页
-</body>
-
-
+    </script>
+  </body>
 </html>

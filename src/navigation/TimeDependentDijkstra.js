@@ -1,75 +1,89 @@
 class timeDependentDijkstra {
     constructor(graph) {
         this.graph = graph;
-        this.distances = {}; // 存储起始点到每个节点的最短时间  
-        this.prevNodes = {}; // 存储到达每个节点的最短路径的前一个节点 
-        this.visited = {}; // 标记节点是否已访问  
+        this.navigationDataMap = new Map();
     }
-    generate(startNode, startTime) {
-        const queue = [{ node: startNode, time: startTime }]; // 优先队列，使用数组模拟  
-
-        // 初始化距离、父节点和访问状态  
-        for (const nodeId in this.graph) {
-            if (nodeId !== this.startNode.id) {
-                this.distances[nodeId] = Infinity;
-            }
-            this.prevNodes[nodeId] = null;
-            this.visited[nodeId] = false;
+    getNavigationData(startId, startTime) {
+        let key = {
+            startId: startId,
+            startTime: startTime
         }
+        let data = this.navigationDataMap.get(key)
+        if (!data) {        
+            let distances = {}  // 存储起始点到每个节点的最短时间  
+            let prevNodes = {} // 存储到达每个节点的最短路径的前一个节点 
+            let visited = {} // 标记节点是否已访问  
+            const queue = [{ id: startId, time: startTime }]; // 优先队列，使用数组模拟  
 
-        // 起始点最短到达时间为0
-        this.distances[this.startNode.id] = 0;
-
-        // 使用队列的方式，穷举出所有路径
-        while (queue.length > 0) {
-            // 取出当前队列中时间最小的节点  
-            queue.sort((a, b) => a.time - b.time);
-            const current = queue.shift();
-            const currentNode = current.node;
-            const currentTime = current.time;
-
-            // 标记当前节点为已访问  
-            this.visited[currentNode.id] = true;
-
-            // 遍历当前节点的所有邻居  
-            for (const edgeId in this.graph[currentNode.id]) {
-                const edge = this.graph[currentNode.id][edgeId];
-                const neighborNode = edge.to;
-                const neighborNodeId = neighborNode.id;
-
-                // 计算从当前节点到邻居节点的行驶时间  
-                const travelTime = edge.travelTimeFunction(currentTime);
-                const arrivalTime = currentTime + travelTime;
-
-                // 如果通过当前节点可以得到更短的到达时间，则更新距离、父节点和队列  
-                if (!this.visited[neighborNodeId] || arrivalTime < this.distances[neighborNodeId]) {
-                    this.distances[neighborNodeId] = arrivalTime;
-                    this.prevNodes[neighborNodeId] = currentNode; // 记录父节点  
-                    queue.push({ node: neighborNode, time: arrivalTime });
+            // 初始化距离、父节点和访问状态  
+            for (const nodeId in this.graph) {
+                if (nodeId !== startId) {
+                    distances[nodeId] = Infinity;
+                }
+                prevNodes[nodeId] = null;
+                visited[nodeId] = false;
+            }
+    
+            // 起始点最短到达时间为0
+            distances[startId] = 0;
+    
+            // 使用队列的方式，穷举出所有路径
+            while (queue.length > 0) {
+                // 取出当前队列中时间最小的节点  
+                queue.sort((a, b) => a.time - b.time);
+                const current = queue.shift();
+                const currentId = current.id;
+                const currentTime = current.time;
+    
+                // 标记当前节点为已访问  
+                visited[currentId] = true;
+    
+                // 遍历当前节点的所有邻居  
+                for (const edgeId in this.graph[currentId]) {
+                    const edge = this.graph[currentId][edgeId];
+                    const neighborNode = edge.to;
+                    const neighborNodeId = neighborNode.id;
+    
+                    // 计算从当前节点到邻居节点的行驶时间  
+                    const travelTime = edge.travelTimeFunction(currentTime);
+                    const arrivalTime = currentTime + travelTime;
+    
+                    // 如果通过当前节点可以得到更短的到达时间，则更新距离、父节点和队列  
+                    if (!visited[neighborNodeId] || arrivalTime < distances[neighborNodeId]) {
+                        distances[neighborNodeId] = arrivalTime;
+                        prevNodes[neighborNodeId] = currentId; // 记录父节点  
+                        queue.push({ node: neighborNode, time: arrivalTime });
+                    }
                 }
             }
+            data = {distances, prevNodes}
+            this.navigationDataMap.set(key, data) 
         }
-        console.log('前导图,表示当前节点的前一个节点', this.prevNodes);
-        console.log('距离图,表示各点到起始点的距离', this.distances);
+
+        return data;
     }
 
-    getShortestPath(startId, endId) {
-        const shortestPaths = {
-            path: [],
-            time: this.distances[endId] - this.distances[startId]
-        };
+    getShortestPath(startId, endId, startTime) {
+        let path = [];
 
+        let data = this.getNavigationData(startId, startTime)
         let id = endId;
         while (id) {
-            shortestPaths.path.unshift(id);
-            let preNode = this.prevNodes[id];
-            id = preNode.id;
+            path.unshift(id);
+            let preNodeId = data.prevNodes[id];
+            id = preNodeId;
             if (id == startId) {
-                shortestPaths.path.unshift(id);
+                path.unshift(id);
                 break;
             }
         }
-        return shortestPaths;
+        return path;
+    }
+
+    getShortestTime(startId, endId, startTime) {
+        let data = this.getNavigationData(startId, startTime)
+        let time = data.distances[endId] - data.distances[startId]
+        return time;
     }
 }
 

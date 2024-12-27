@@ -1,5 +1,8 @@
+import Utils from "../common/Utils.js";
 import { DisasterArea } from "./DisasterArea.js";
+import { Road } from "./road.js";
 import { Truck } from "./truck.js";
+
 import { timeDependentDijkstra } from "../main.js";
 
 const __ = {
@@ -17,7 +20,7 @@ function _initPrivateMembers(that, param) {
   // 私有方法
 
   // 根据救援车辆所在受灾点位置和当前时间，计算出起抵达各个受灾点的行驶时间和抵达时间
-  _private.getTravelData() = (truck) => {
+  _private.getTravelData = (truck) => {
     let result = [];
     let count = _private.DisasterAreas.length;
     for(let i = 0; i < count; i++){
@@ -78,15 +81,41 @@ function _initPrivateMembers(that, param) {
 
   }
 
-  _private.init = (param) => {   
-    _private.disasterAreas = param.disasterAreas;       // 受灾的区域
-    _private.trucks = params.trucks;            //救援车辆数据
-    _private.startTime = params.startTime;      //开始救援时间
+  // 初始化
+  _private.initDisasterAreas = (data) =>{
+    let result = [];
+    for(let i = 0; i < data.data.length; i++){
+      result.push(new DisasterArea(data.data[i]));
+    }
+    return result;
+  }
 
+  _private.initRoads = (data) =>{
+    let result = [];
+    for(let i = 0; i < data.data.length; i++){
+      result.push(new Road(data.data[i]));
+    }
+    return result;
+  }
+
+  _private.initTrucks = (data) =>{
+    let result = [];
+    for(let i = 0; i < data.count; i++){
+      result.push(new Truck({capacity: data.capacity}));
+    }
+    return result;
+  }
+  _private.init = async (param) => {   
+    let disasterData = await Utils.fetchJson(param.disasterPath);
+    _private.disasterAreas = _private.initDisasterAreas(disasterData);
+    let roadData = await Utils.fetchJson(param.roadPath);
+    _private.roads = _private.initRoads(roadData);
+    let trucks = await Utils.fetchJson(param.truckPath);
+    _private.trucks = _private.initTrucks(trucks);
   };
   _private.init(param);
 }
-class VRPRDL {
+class VRPManager {
   constructor(param) {
     _initPrivateMembers(this, param);
   }
@@ -130,4 +159,4 @@ class VRPRDL {
 
 }
 
-export { VRPRDL };
+export default VRPManager;

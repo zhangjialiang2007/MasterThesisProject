@@ -1,8 +1,13 @@
 class Edge {
-    constructor(from, to, travelTimeFunction) {
-        this.from = from;
-        this.to = to;
-        this.travelTimeFunction = travelTimeFunction;
+    constructor(param) {
+        this.id = param.id;
+        this.name = param.name;
+        this.from = param.from;
+        this.to = param.to;
+    }
+
+    getTravelTime(time) {
+        return 0;
     }
 }
 
