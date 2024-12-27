@@ -109,7 +109,26 @@ function _initPrivateMembers(that, param) {
   }
   // 初始化导航路网数据
   _private.initGraph = (param) =>{
-    let result = [];
+    let result = {};
+    _private.disasterAreas.forEach(area => {
+      result[area.id] = {};
+      _private.roads.forEach(road => {
+        if(road.start === area.id){
+          result[area.id][road.end] = road;
+        }
+      });
+
+
+      result.push(area.id);
+    });
+
+    // 节点id是点
+
+    // 根据点能够检索到与之相连的边
+
+    // 根据边能够检索到与之相连的点
+
+
 
     return result;
   }
