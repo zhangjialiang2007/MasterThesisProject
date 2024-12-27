@@ -1,9 +1,8 @@
 import Utils from "../common/Utils.js";
 import { DisasterArea } from "./DisasterArea.js";
-import { Road } from "./road.js";
-import { Truck } from "./truck.js";
-
-import { timeDependentDijkstra } from "../main.js";
+import { Road } from "./Road.js";
+import { Truck } from "./Truck.js";
+import { TimeDependentDijkstra } from "../navigation/TimeDependentDijkstra.js";
 
 const __ = {
   private: Symbol("private"),
@@ -15,7 +14,10 @@ function _initPrivateMembers(that, param) {
   // 私有属性
   _private.disasterAreas = [];
   _private.trucks = [];
+  _private.graph = [];
+  _private.navTool = null;
   _private.startTime = 0;
+ 
 
   // 私有方法
 
@@ -80,8 +82,8 @@ function _initPrivateMembers(that, param) {
   
 
   }
-
-  // 初始化
+  // #region 初始化 
+  // 初始化受灾点数据
   _private.initDisasterAreas = (data) =>{
     let result = [];
     for(let i = 0; i < data.data.length; i++){
@@ -89,7 +91,7 @@ function _initPrivateMembers(that, param) {
     }
     return result;
   }
-
+  // 初始化道路数据
   _private.initRoads = (data) =>{
     let result = [];
     for(let i = 0; i < data.data.length; i++){
@@ -97,7 +99,7 @@ function _initPrivateMembers(that, param) {
     }
     return result;
   }
-
+  // 初始化救援车辆数据
   _private.initTrucks = (data) =>{
     let result = [];
     for(let i = 0; i < data.count; i++){
@@ -105,14 +107,29 @@ function _initPrivateMembers(that, param) {
     }
     return result;
   }
-  _private.init = async (param) => {   
+  // 初始化导航路网数据
+  _private.initGraph = (param) =>{
+    let result = [];
+
+    return result;
+  }
+   _private.init = async (param) => {   
+    // disaster
     let disasterData = await Utils.fetchJson(param.disasterPath);
     _private.disasterAreas = _private.initDisasterAreas(disasterData);
+    // road
     let roadData = await Utils.fetchJson(param.roadPath);
     _private.roads = _private.initRoads(roadData);
+    // truck
     let trucks = await Utils.fetchJson(param.truckPath);
     _private.trucks = _private.initTrucks(trucks);
+    // graph
+    _private.graph = _private.initGraph();
+    // navTool
+    _private.navTool = new TimeDependentDijkstra(_private.graph);
+
   };
+   // #endregion
   _private.init(param);
 }
 class VRPManager {

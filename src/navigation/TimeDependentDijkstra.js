@@ -1,4 +1,4 @@
-class timeDependentDijkstra {
+class TimeDependentDijkstra {
     constructor(graph) {
         this.graph = graph;
         this.navigationDataMap = new Map();
@@ -87,4 +87,4 @@ class timeDependentDijkstra {
     }
 }
 
-export { timeDependentDijkstra }
+export { TimeDependentDijkstra }

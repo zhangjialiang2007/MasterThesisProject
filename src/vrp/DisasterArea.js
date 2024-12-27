@@ -12,6 +12,8 @@ class DisasterArea extends Node {
     this.delivery_time1 = 0;
     // 二次物资配送时间
     this.delivery_time2 = 0;
+    // 物资短缺综合指数
+    this.SCI = 0;
   }
   inTimeWindow(t) {
     return t >= this.startTime && t <= this.endTime;
