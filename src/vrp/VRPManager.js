@@ -3,6 +3,7 @@ import { DisasterArea } from "./DisasterArea.js";
 import { Road } from "./Road.js";
 import { Truck } from "./Truck.js";
 import { TimeDependentDijkstra } from "../navigation/TimeDependentDijkstra.js";
+import { Graph } from "../navigation/Graph.js";
 
 const __ = {
   private: Symbol("private"),
@@ -11,15 +12,14 @@ function _initPrivateMembers(that, param) {
   that[__.private] = {};
   const _private = that[__.private];
 
-  // 私有属性
-  _private.disasterAreas = [];
-  _private.trucks = [];
-  _private.graph = [];
+  // #region 私有属性
+  _private.disasterAreas = new Map();
+  _private.roads = new Map();
+  _private.trucks = new Map();
   _private.navTool = null;
   _private.startTime = 0;
- 
+  // #endregion
 
-  // 私有方法
 
   // 根据救援车辆所在受灾点位置和当前时间，计算出起抵达各个受灾点的行驶时间和抵达时间
   _private.getTravelData = (truck) => {
@@ -82,71 +82,49 @@ function _initPrivateMembers(that, param) {
   
 
   }
+
   // #region 初始化 
-  // 初始化受灾点数据
+  _private.initRescueCenter = (data) =>{
+    _private.rescueCenter = new RescueCenter(data);
+  }
   _private.initDisasterAreas = (data) =>{
-    let result = [];
     for(let i = 0; i < data.data.length; i++){
-      result.push(new DisasterArea(data.data[i]));
+      let area = new DisasterArea(data.data[i]);
+      _private.disasterAreas.set(area.id, area);
     }
-    return result;
   }
-  // 初始化道路数据
   _private.initRoads = (data) =>{
-    let result = [];
     for(let i = 0; i < data.data.length; i++){
-      result.push(new Road(data.data[i]));
+      let road = new Road(data.data[i]);
+      _private.roads.set(road.id, road);
     }
-    return result;
   }
-  // 初始化救援车辆数据
   _private.initTrucks = (data) =>{
-    let result = [];
     for(let i = 0; i < data.count; i++){
-      result.push(new Truck({capacity: data.capacity}));
+      let truck = new Truck({capacity: data.capacity});
+      _private.trucks.set(truck.id, truck);
     }
-    return result;
   }
-  // 初始化导航路网数据
-  _private.initGraph = (param) =>{
-    let result = {};
-    _private.disasterAreas.forEach(area => {
-      result[area.id] = {};
-      _private.roads.forEach(road => {
-        if(road.start === area.id){
-          result[area.id][road.end] = road;
-        }
-      });
-
-
-      result.push(area.id);
-    });
-
-    // 节点id是点
-
-    // 根据点能够检索到与之相连的边
-
-    // 根据边能够检索到与之相连的点
-
-
-
-    return result;
-  }
-   _private.init = async (param) => {   
+  _private.init = async (param) => {   
+    // rescueCenter
+    let rescueCenterData = await Utils.fetchJson(param.rescueCenterPath);
+    _private.initRescueCenter(rescueCenterData);
     // disaster
     let disasterData = await Utils.fetchJson(param.disasterPath);
-    _private.disasterAreas = _private.initDisasterAreas(disasterData);
+    _private.initDisasterAreas(disasterData);
     // road
     let roadData = await Utils.fetchJson(param.roadPath);
-    _private.roads = _private.initRoads(roadData);
+    _private.initRoads(roadData);
     // truck
-    let trucks = await Utils.fetchJson(param.truckPath);
-    _private.trucks = _private.initTrucks(trucks);
-    // graph
-    _private.graph = _private.initGraph();
+    let truckData = await Utils.fetchJson(param.truckPath);
+    _private.initTrucks(truckData);
     // navTool
-    _private.navTool = new TimeDependentDijkstra(_private.graph);
-
+    let nodes = [_private.rescueCenter, ..._private.disasterAreas.values()];
+    let graph = new Graph({
+      nodes,
+      edges: _private.roads.values()
+    });
+    _private.navTool = new TimeDependentDijkstra({graph})
   };
    // #endregion
   _private.init(param);
@@ -192,7 +170,6 @@ class VRPManager {
     }
     return result;
   }
-
 }
 
 export default VRPManager;

@@ -1,28 +1,29 @@
 class TimeDependentDijkstra {
     constructor(graph) {
         this.graph = graph;
-        this.navigationDataMap = new Map();
+        this.cacheMap = new Map();
     }
     getNavigationData(startId, startTime) {
         let key = {
             startId: startId,
             startTime: startTime
         }
-        let data = this.navigationDataMap.get(key)
+        let data = this.cacheMap.get(key)
         if (!data) {        
             let distances = {}  // 存储起始点到每个节点的最短时间  
             let prevNodes = {} // 存储到达每个节点的最短路径的前一个节点 
             let visited = {} // 标记节点是否已访问  
             const queue = [{ id: startId, time: startTime }]; // 优先队列，使用数组模拟  
 
-            // 初始化距离、父节点和访问状态  
-            for (const nodeId in this.graph) {
+            // 初始化距离、父节点和访问状态 
+            let nodes = this.graph.getNodes();
+            nodes.forEach(nodeId =>{
                 if (nodeId !== startId) {
                     distances[nodeId] = Infinity;
                 }
                 prevNodes[nodeId] = null;
                 visited[nodeId] = false;
-            }
+            })
     
             // 起始点最短到达时间为0
             distances[startId] = 0;
@@ -39,8 +40,8 @@ class TimeDependentDijkstra {
                 visited[currentId] = true;
     
                 // 遍历当前节点的所有邻居  
-                for (const edgeId in this.graph[currentId]) {
-                    const edge = this.graph[currentId][edgeId];
+                let edges = this.graph.getAdjacentEdges(currentId);
+                edges.forEach(edge =>{
                     const neighborNode = edge.to;
                     const neighborNodeId = neighborNode.id;
     
@@ -52,12 +53,13 @@ class TimeDependentDijkstra {
                     if (!visited[neighborNodeId] || arrivalTime < distances[neighborNodeId]) {
                         distances[neighborNodeId] = arrivalTime;
                         prevNodes[neighborNodeId] = currentId; // 记录父节点  
-                        queue.push({ node: neighborNode, time: arrivalTime });
+                        queue.push({ id: neighborNodeId, time: arrivalTime });
                     }
-                }
+
+                })
             }
             data = {distances, prevNodes}
-            this.navigationDataMap.set(key, data) 
+            this.cacheMap.set(key, data) 
         }
 
         return data;
