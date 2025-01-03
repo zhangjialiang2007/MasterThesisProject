@@ -1,22 +1,42 @@
 import { Node } from '../navigation/Node.js';
+import { Utils } from '../common/Utils.js';
 class DisasterArea extends Node {
   constructor(param) {
     super(param.id);
     this.name = param.name || '';
     this.total_demand = param.total_demand;
-    this.current_demand = this.total_demand;
     this.threshold_time = new Date(param.threshold_time);
     this.limit_time = new Date(param.limit_time);
-    
-    // 首次物资配送时间
-    this.delivery_time1 = 0;
-    // 二次物资配送时间
-    this.delivery_time2 = 0;
-    // 物资短缺综合指数
+    this.reset();
+  }
+
+  reset() {
+    this.current_demand = this.total_demand;
+    this.delivery_time = null;
     this.SCI = 0;
   }
-  inTimeWindow(t) {
-    return t >= this.startTime && t <= this.endTime;
+
+  _updateSCI() {
+    let sti = Utils.getSTI(this.threshold_time, this.limit_time, this.delivery_time);
+    let ssi = Utils.getSSI(this.current_demand, this.total_demand);
+    let sci = sti * ssi;
+    this.SCI += sci;
+  }
+
+  // 接收物资
+  receive(amount, time) {
+    this.delivery_time = time;
+    // 先更新SCI
+    this._updateSCI();
+    // 在更新当前需求
+    this.current_demand -= amount;
+    if(this.current_demand < 0) {
+      this.current_demand = 0;
+    }
+  }
+
+  isCompleted() {
+    return this.current_demand == 0;
   }
 }
 
