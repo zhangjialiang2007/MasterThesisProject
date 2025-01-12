@@ -312,7 +312,9 @@ function _initPrivateMembers(that, param) {
     }
   };
   _private.init = async (param) => {
-
+    // config 
+    let configData = await Utils.fetchJson(param.configPath);
+    _private.initConfig(configData);
     // rescueCenter
     let rescueCenterData = await Utils.fetchJson(param.rescueCenterPath);
     _private.initRescueCenter(rescueCenterData);

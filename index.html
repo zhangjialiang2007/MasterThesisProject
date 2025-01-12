@@ -7,7 +7,9 @@
     <script type="module">
       import VRPManager from "./src/vrp/VRPManager.js";
       let manager = new VRPManager({
+        configPath: "data/config.json",
         disasterPath: "data/disaster_area.json", 
+        rescueCenterPath: "data/rescue_center.json",
         roadPath: "data/road.json",
         truckPath: "data/truck.json"
       });
