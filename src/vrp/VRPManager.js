@@ -10,7 +10,7 @@ import { Solution } from "./Solution.js";
 const __ = {
   private: Symbol("private"),
 };
-function _initPrivateMembers(that, param) {
+function _initPrivateMembers(that) {
   that[__.private] = {};
   const _private = that[__.private];
 
@@ -35,6 +35,7 @@ function _initPrivateMembers(that, param) {
     }
 
     // 构造s个初始解
+    let s = _private.config.baseSolutionCount;
     for (let i = 0; i < s; i++) {
       let solution = _private.generateBaseSolution();
       solutions.push(solution);
@@ -46,20 +47,22 @@ function _initPrivateMembers(that, param) {
     // 重置数据
     _private.resetData();
     // 未配送受灾区域，需要深拷贝避免修改源数据
-    let areas = _private.disasterAreas.values().slice();
+    let values = _private.disasterAreas.values().toArray();
+    let areas = values.slice();
     let M = _private.trucks.size;
     let m = _private.config.nearTruckCount;
     while (areas.length > 0) {
       // 获取救援车辆到各个受灾点的行驶时间和抵达时间
-      let travelData = _private.getTravelData(unfinishedDisasterAreas);
+      let travelData = _private.getTravelData(areas);
 
-      // 从travelData中贪婪随机选取m个行驶时间最短的数据
-      let nearData = _private.selectNearData(travelData, m);
-      _private.updateData(nearData, areas);
+      let nearTravelData = travelData.slice(0, m);
+      let nearData = _private.selectNearData(nearTravelData);
+      _private.updateData(nearData);
 
       // 从travelData中贪婪随机选取M-m个紧急程度最高的数据
-      let emergencyData = _private.selectEmergencyData(travelData, M - m);
-      _private.updateData(emergencyData, areas);
+      let emergencyTravelData = travelData.slice(m);
+      let emergencyData = _private.selectEmergencyData(emergencyTravelData);
+      _private.updateData(emergencyData);
 
       areas = areas.filter(area => !area.isCompleted());
     }
@@ -85,6 +88,11 @@ function _initPrivateMembers(that, param) {
     for (let truck of trucks) {
       let truckData = [];
       for (let area of areas) {
+        // 过滤掉已完成配送的受灾点
+        if(area.isCompleted()){
+          continue;
+        }
+
         // 获取救援车辆到受灾点的行驶时间
         let travelTime = _private.navTool.getShortestTime(
           truck.currentPos,
@@ -92,12 +100,13 @@ function _initPrivateMembers(that, param) {
           truck.currentTime
         );
         // 根据送达时间计算受灾点的紧急程度
-        let arrivalTime = truck.currentTime + travelTime;
+        let arrivalTime = Utils.addTime(truck.currentTime, travelTime);
         let emergency = Utils.getEmergency(
-          area.thresholdTime,
-          area.limitTime,
+          area.threshold_time,
+          area.limit_time,
           arrivalTime
         );
+
         // 将救援车辆到受灾点的行驶时间和紧急程度添加到结果中
         let item = {
           truckId: truck.id,
@@ -112,21 +121,30 @@ function _initPrivateMembers(that, param) {
     }
     return travelData;
   };
-  _private.selectNearData = (travelData, count) => {
+  _private.selectNearData = (travelData) => {
     let tableNear = [];
     let countNear = 1;
+    let selected = [];
     let x = 1;
     for (let truckData of travelData) {
+      // 过滤掉已完成配送的受灾点
       let data = truckData.filter(item => {
         let area = _private.disasterAreas.get(item.areaId);
         return !area.isCompleted();
       });
+      // 过滤掉已选择的受灾点
+      data = data.filter(item => !selected.includes(item.areaId));
+      // 按行驶时间排序
       data.sort((a, b) => a.travelTime - b.travelTime);
       let nearData = data.slice(0, countNear);
+      // 将nearData添加到tableNear中
       tableNear.push(...nearData);
+      selected.push(...nearData.map(item => item.areaId));
     }
-    // 对tableNear按行驶时间由短到长排序,选取m+x个最短的
+    // 对tableNear按行驶时间由短到长排序,
     tableNear.sort((a, b) => a.travelTime - b.travelTime);
+
+    // 选取m+x个travelTime最短的,要求truckId和areaId不重复
     let nearData = tableNear.slice(0, count + x);
     // nearData中随机返回m个
     let result = Utils.randomSelect(nearData, count);
@@ -301,15 +319,35 @@ function _initPrivateMembers(that, param) {
     }
     _private.unfinishedDisasterAreas = new Map([..._private.disasterAreas]);
   };
+  _private.getPoint = (id) => {
+    if(id === _private.rescueCenter.id){
+      return _private.rescueCenter;
+    }
+    return _private.disasterAreas.get(id);
+  };
   _private.initRoads = (data) => {
     for (let i = 0; i < data.data.length; i++) {
-      let road = new Road(data.data[i]);
+      let roadData = data.data[i];
+      let from = _private.getPoint(roadData.from);
+      let to = _private.getPoint(roadData.to);
+      let road = new Road({
+        id: roadData.id,
+        from: from,
+        to: to,
+        travelTime: roadData.travelTime
+      });
       _private.roads.set(road.id, road);
     }
   };
   _private.initTrucks = (data) => {
     for (let i = 0; i < data.count; i++) {
-      let truck = new Truck({ capacity: data.capacity });
+      let truck = new Truck({ 
+        manager: that,
+        id: i,
+        capacity: data.capacity,
+        startPos: data.startPos,
+        startTime: data.startTime
+      });
       _private.trucks.set(truck.id, truck);
     }
   };
@@ -331,18 +369,39 @@ function _initPrivateMembers(that, param) {
     _private.initTrucks(truckData);
     // navTool
     let nodes = [_private.rescueCenter, ..._private.disasterAreas.values()];
+    let edges = Array.from(_private.roads.values());
     let graph = new Graph({
       nodes,
-      edges: _private.roads.values(),
+      edges,
     });
-    _private.navTool = new TimeDependentDijkstra({ graph });
+    _private.navTool = new TimeDependentDijkstra( graph );
   };
   // #endregion
-  _private.init(param);
 }
 class VRPManager {
   constructor(param) {
-    _initPrivateMembers(this, param);
+    _initPrivateMembers(this);
+  }
+
+  async init(param){
+    let _private = this[__.private];
+    await _private.init(param);
+  }
+
+  getBestSolution(){
+    let _private = this[__.private];
+    let solutions = _private.generateBaseSolutions();
+    let bestSolution = solutions[0];
+    return bestSolution;
+  }
+
+  getNavTool(){
+    let _private = this[__.private];
+    return _private.navTool;
+  }
+  getRescueCenter(){
+    let _private = this[__.private];
+    return _private.rescueCenter;
   }
 }
 

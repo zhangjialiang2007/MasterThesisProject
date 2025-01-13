@@ -12,14 +12,15 @@ class Road extends Edge {
       let timeData = element.time;
       let data= [];
       for (let key in timeData) {
-        data.push(timeData[key])
+        let time = timeData[key] * 60 * 1000; // 转换为毫秒
+        data.push(time)
       }
       this.travelTime.set(dateType, data);
     });
   }
 
-  getTravelTime(time, type = dateType.workday) {
-    let timeData = this.travelTime.get(key);
+  getTravelTime(time, type = DateType.workday) {
+    let timeData = this.travelTime.get(type);
     return timeData[time];
   }
 }

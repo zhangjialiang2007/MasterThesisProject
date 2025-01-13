@@ -1,112 +1,112 @@
 {
     "data": [
         {
-            "id":"1",
+            "id":1,
             "name":"中胶国际",
             "total_demand":5.25,
             "threshold_time":"2023/8/1 11:00:00",
             "limit_time":"2023/8/2 11:00:00"
         },
         {
-            "id":"2",
+            "id":2,
             "name":"高新区学校",
             "total_demand":6.3,
             "threshold_time":"2023/8/1 9:30:00",
             "limit_time":"2023/8/2 9:30:00"
         },
         {
-            "id":"3",
+            "id":3,
             "name":"中冶未来城",
             "total_demand":2.7,
             "threshold_time":"2023/8/1 10:00:00",
             "limit_time":"2023/8/2 10:00:00"
         },
         {
-            "id":"4",
+            "id":4,
             "name":"职教中心",
             "total_demand":5.25,
             "threshold_time":"2023/8/1 11:00:00",
             "limit_time":"2023/8/2 11:00:00"
         },
         {
-            "id":"5",
+            "id":5,
             "name":"双语学校",
             "total_demand":4.5,
             "threshold_time":"2023/8/1 12:00:00",
             "limit_time":"2023/8/2 12:00:00"
         },
         {
-            "id":"6",
+            "id":6,
             "name":"平安社区",
             "total_demand":2.7,
             "threshold_time":"2023/8/1 13:00:00",
             "limit_time":"2023/8/2 13:00:00"
         },
         {
-            "id":"7",
+            "id":7,
             "name":"刁窝商业街",
             "total_demand":3,
             "threshold_time":"2023/8/1 11:30:00",
             "limit_time":"2023/8/2 11:30:00"
         },
         {
-            "id":"8",
+            "id":8,
             "name":"劳技校",
             "total_demand":5.1,
             "threshold_time":"2023/8/1 10:30:00",
             "limit_time":"2023/8/2 10:30:00"
         },
         {
-            "id":"9",
+            "id":9,
             "name":"刁窝村",
             "total_demand":6.3,
             "threshold_time":"2023/8/1 11:00:00",
             "limit_time":"2023/8/2 11:00:00"
         },
         {
-            "id":"10",
+            "id":10,
             "name":"白塔村",
             "total_demand":3.3,
             "threshold_time":"2023/8/1 12:00:00",
             "limit_time":"2023/8/2 12:00:00"
         },
         {
-            "id":"11",
+            "id":11,
             "name":"泗平庄",
             "total_demand":1.5,
             "threshold_time":"2023/8/1 11:30:00",
             "limit_time":"2023/8/2 11:30:00"
         },
         {
-            "id":"12",
+            "id":12,
             "name":"高铁学校",
             "total_demand":5.25,
             "threshold_time":"2023/8/1 11:00:00",
             "limit_time":"2023/8/2 11:00:00"
         },
         {
-            "id":"13",
+            "id":13,
             "name":"潘各庄",
             "total_demand":2.25,
             "threshold_time":"2023/8/1 11:30:00",
             "limit_time":"2023/8/2 11:30:00"
         },
         {
-            "id":"14",
+            "id":14,
             "name":"万全庄",
             "total_demand":0.9,
             "threshold_time":"2023/8/1 10:00:00",
             "limit_time":"2023/8/2 10:00:00"
         },
         {
-            "id":"15",
+            "id":15,
             "name":"大柳村",
             "total_demand":2.7,
             "threshold_time":"2023/8/1 10:00:00",
             "limit_time":"2023/8/2 10:00:00"
         },
         {
-            "id":"16",
+            "id":16,
             "name":"码头村",
             "total_demand":5.1,
             "threshold_time":"2023/8/1 11:00:00",

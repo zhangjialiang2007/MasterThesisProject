@@ -10,7 +10,14 @@ class Graph {
         return this.edges;
     }
     getAdjacentEdges(nodeId){
-        return this.edges.filter(edge => edge.from.id === nodeId);
+        let result = [];
+        for(let i = 0; i < this.edges.length; i++){
+            let edge = this.edges[i];
+            if(edge.from.id === nodeId){
+                result.push(edge);
+            }
+        }
+        return result;
     }
 }
 

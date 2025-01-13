@@ -1,9 +1,12 @@
+import { Utils } from "../common/Utils.js";
+
 class Truck {
   constructor(param) {
     this.manager = param.manager;
+    this.id = param.id;
     this.capacity = param.capacity;
     this.startPos = param.startPos;
-    this.startTime = param.startTime;
+    this.startTime = new Date(param.startTime);
     this.reset();
   }
 
@@ -31,10 +34,19 @@ class Truck {
     this.currentTime = arrivalTime;
     // 将受灾点添加到配送队列
     this.deliveryQueue.push(area.id);
+
     // 如果救援车辆剩余载重为0，则将救援中心添加到配送队列
     if(this.remain === 0) {
       let rescueCenter = this.manager.getRescueCenter();
       this.deliveryQueue.push(rescueCenter.id);
+      let travelTime = this.manager.getNavTool().getShortestTime(
+        this.currentPos,
+        rescueCenter.id,
+        this.currentTime
+      );
+      this.currentPos = rescueCenter.id;
+      this.currentTime = Utils.addTime(this.currentTime, travelTime);
+      this.remain = this.capacity;
     }
   }
 

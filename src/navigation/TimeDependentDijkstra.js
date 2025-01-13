@@ -13,7 +13,7 @@ class TimeDependentDijkstra {
             let distances = {}  // 存储起始点到每个节点的最短时间  
             let prevNodes = {} // 存储到达每个节点的最短路径的前一个节点 
             let visited = {} // 标记节点是否已访问  
-            const queue = [{ id: startId, time: startTime }]; // 优先队列，使用数组模拟  
+            const queue = [{ id: startId, time: startTime.getTime() }]; // 优先队列，使用数组模拟  
 
             // 初始化距离、父节点和访问状态 
             let nodes = this.graph.getNodes();
@@ -25,8 +25,8 @@ class TimeDependentDijkstra {
                 visited[nodeId] = false;
             })
     
-            // 起始点最短到达时间为0
-            distances[startId] = 0;
+            // 起始点最短到达时间
+            distances[startId] = startTime.getTime();
     
             // 使用队列的方式，穷举出所有路径
             while (queue.length > 0) {
@@ -46,7 +46,8 @@ class TimeDependentDijkstra {
                     const neighborNodeId = neighborNode.id;
     
                     // 计算从当前节点到邻居节点的行驶时间  
-                    const travelTime = edge.travelTimeFunction(currentTime);
+                    let time = new Date(currentTime);
+                    const travelTime = edge.getTravelTime(time.getHours());
                     const arrivalTime = currentTime + travelTime;
     
                     // 如果通过当前节点可以得到更短的到达时间，则更新距离、父节点和队列  
@@ -84,8 +85,9 @@ class TimeDependentDijkstra {
 
     getShortestTime(startId, endId, startTime) {
         let data = this.getNavigationData(startId, startTime)
-        let time = data.distances[endId] - data.distances[startId]
-        return time;
+        let ms = data.distances[endId] - data.distances[startId]
+        let minutes = ms / 60 / 1000;
+        return minutes;
     }
 }
 

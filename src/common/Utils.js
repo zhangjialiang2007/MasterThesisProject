@@ -35,7 +35,7 @@ class Utils {
     }
 
     static addTime(time, minutes) {
-        let durationInMilliseconds = minutes * 60 * 1000; // 5分钟 * 60秒/分钟 * 1000毫秒/秒
+        let durationInMilliseconds = minutes * 60 * 1000; 
         let newTime = new Date(time.getTime() + durationInMilliseconds);
         return newTime;
     }
@@ -91,4 +91,4 @@ class Utils {
     }
 }
 
-export { Utils };
+export {Utils};
