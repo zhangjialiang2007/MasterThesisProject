@@ -5,7 +5,7 @@
             "name":"行政大厅到职教中心",
             "from":"0",
             "to":"4",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -42,7 +42,7 @@
             "name":"职教中心到行政大厅",
             "from":"4",
             "to":"0" ,
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -79,7 +79,7 @@
             "name":"职教中心到双语学校",
             "from":"4",
             "to":"5",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -116,7 +116,7 @@
             "name":"双语学校到职教中心",
             "from":"5",
             "to":"4",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -153,7 +153,7 @@
             "name":"职教中心到平安社区",
             "from":"4",
             "to":"6",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -190,7 +190,7 @@
             "name":"平安社区到职教中心",
             "from":"6",
             "to":"4",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -227,7 +227,7 @@
             "name":"行政大厅到中胶国际",
             "from":"0",
             "to":"1",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -264,7 +264,7 @@
             "name":"中胶国际到行政大厅",
             "from":"1",
             "to":"0",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -301,7 +301,7 @@
             "name":"中胶国际到平安社区",
             "from":"1",
             "to":"6",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -338,7 +338,7 @@
             "name":"平安社区到中胶国际",
             "from":"6",
             "to":"1",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -375,7 +375,7 @@
             "name":"中胶国际到高新区学校",
             "from":"1",
             "to":"2",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -412,7 +412,7 @@
             "name":"高新区学校到中胶国际",
             "from":"2",
             "to":"1",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -449,7 +449,7 @@
             "name":"高新区学校到中冶未来城",
             "from":"2",
             "to":"3",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -486,7 +486,7 @@
             "name":"中冶未来城到高新区学校",
             "from":"2",
             "to":"3",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -523,7 +523,7 @@
             "name":"中胶国际到劳技校",
             "from":"1",
             "to":"8",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -560,7 +560,7 @@
             "name":"劳技校到中胶国际",
             "from":"8",
             "to":"1",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -597,7 +597,7 @@
             "name":"劳技校到刁窝村",
             "from":"8",
             "to":"9",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -634,7 +634,7 @@
             "name":"刁窝村到劳技校",
             "from":"9",
             "to":"8" ,
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -671,7 +671,7 @@
             "name":"行政大厅到刁窝商业街",
             "from":"0",
             "to":"7",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -708,7 +708,7 @@
             "name":"刁窝商业街到行政大厅",
             "from":"7",
             "to":"0",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -745,7 +745,7 @@
             "name":"刁窝商业街到劳技校",
             "from":"7",
             "to":"8",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -782,7 +782,7 @@
             "name":"劳技校到刁窝商业街",
             "from":"8",
             "to":"7",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -819,7 +819,7 @@
             "name":"刁窝商业街到刁窝村",
             "from":"7",
             "to":"9",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -856,7 +856,7 @@
             "name":"刁窝村到刁窝商业街",
             "from":"9",
             "to":"7",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -893,7 +893,7 @@
             "name":"刁窝商业街到白塔",
             "from":"7",
             "to":"10",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -930,7 +930,7 @@
             "name":"白塔到刁窝商业街",
             "from":"10",
             "to":"7" ,
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -967,7 +967,7 @@
             "name":"行政大厅到高铁学校",
             "from":"0",
             "to":"12",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1004,7 +1004,7 @@
             "name":"高铁学校到行政大厅",
             "from":"12",
             "to":"0",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1041,7 +1041,7 @@
             "name":"高铁学校到双语学校",
             "from":"12",
             "to":"5",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1078,7 +1078,7 @@
             "name":"双语学校到高铁学校",
             "from":"5",
             "to":"12",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1115,7 +1115,7 @@
             "name":"高铁学校到白塔",
             "from":"12",
             "to":"10",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1152,7 +1152,7 @@
             "name":"白塔到高铁学校",
             "from":"10",
             "to":"12",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1189,7 +1189,7 @@
             "name":"白塔到泗平庄",
             "from":"10",
             "to":"11",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1226,7 +1226,7 @@
             "name":"泗平庄到白塔",
             "from":"11",
             "to":"10",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1263,7 +1263,7 @@
             "name":"泗平庄到潘各庄",
             "from":"11",
             "to":"13",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1300,7 +1300,7 @@
             "name":"潘各庄到泗平庄",
             "from":"13",
             "to":"11",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1337,7 +1337,7 @@
             "name":"白塔到潘各庄",
             "from":"10",
             "to":"13",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1374,7 +1374,7 @@
             "name":"潘各庄到白塔",
             "from":"13",
             "to":"10",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1411,7 +1411,7 @@
             "name":"潘各庄到万全庄",
             "from":"13",
             "to":"14",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1448,7 +1448,7 @@
             "name":"万全庄到潘各庄",
             "from":"14",
             "to":"13",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1485,7 +1485,7 @@
             "name":"万全庄到刁窝商业街",
             "from":"14",
             "to":"7" ,
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1522,7 +1522,7 @@
             "name":"刁窝商业街到万全庄",
             "from":"7",
             "to":"14",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1559,7 +1559,7 @@
             "name":"万全庄到大柳村",
             "from":"14",
             "to":"15",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1596,7 +1596,7 @@
             "name":"大柳村到万全庄",
             "from":"15",
             "to":"14",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1633,7 +1633,7 @@
             "name":"大柳村到刁窝村",
             "from":"15",
             "to":"9",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1670,7 +1670,7 @@
             "name":"刁窝村到大柳村",
             "from":"9",
             "to":"15",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1707,7 +1707,7 @@
             "name":"大柳村到码头村",
             "from":"15",
             "to":"16",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1744,7 +1744,7 @@
             "name":"码头村到大柳村",
             "from":"16",
             "to":"15",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1781,7 +1781,7 @@
             "name":"码头村到中冶未来城",
             "from":"16",
             "to":"3",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{
@@ -1818,7 +1818,7 @@
             "name":"中冶未来城到码头村",
             "from":"3",
             "to":"16",
-            "TrivalTime":[
+            "travelTime":[
                 {
                     "type":"workday",
                     "time":{

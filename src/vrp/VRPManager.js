@@ -1,4 +1,4 @@
-import Utils from "../common/Utils.js";
+import { Utils } from "../common/Utils.js";
 import { RescueCenter } from "./RescueCenter.js";
 import { DisasterArea } from "./DisasterArea.js";
 import { Road } from "./Road.js";
@@ -25,21 +25,23 @@ function _initPrivateMembers(that, param) {
   // #endregion
 
   // #region 基础解生成
-  _private.generateBaseSolutions = (s, m) => {
+  _private.generateBaseSolutions = () => {
     let solutions = [];
-    if (m < 0 || m > _private.trucks.length) {
+    let M = _private.trucks.size;
+    let m = _private.config.nearTruckCount;
+    if (m < 0 || m > M) {
       console.error("救济配送救援车辆数量不合理,需要保证在0到救援车辆数量之间");
       return solutions;
     }
 
     // 构造s个初始解
     for (let i = 0; i < s; i++) {
-      let solution = _private.generateBaseSolution(m);
+      let solution = _private.generateBaseSolution();
       solutions.push(solution);
     }
     return solutions;
   };
-  _private.generateBaseSolution = (m) => {
+  _private.generateBaseSolution = () => {
     let solution = new Solution();
     // 重置数据
     _private.resetData();
@@ -241,19 +243,19 @@ function _initPrivateMembers(that, param) {
     }
 
     // 初始化结果数组
-    let solution = [];
+    let result = [];
     solutionCode.forEach(queueCode => {
       let queue = _private.decodeDeliveryQueue(queueCode);
-      solution.push(queue);
+      result.push(queue);
     })
-    return solution;
+    return result;
   };
   // #endregion
 
   // 交叉操作
   _private.crossover = (code1, code2) => {
 
-    return decoded;
+    return result;
   };
   // 变异操作
   _private.mutate = (solution) => {

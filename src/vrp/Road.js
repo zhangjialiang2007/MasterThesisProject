@@ -1,5 +1,5 @@
 import { Edge } from '../navigation/Edge.js';
-import { dateType } from '../common/const.js';
+import { DateType } from '../common/Const.js';
 class Road extends Edge {
   constructor(param) {
     super(param);
