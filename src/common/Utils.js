@@ -86,7 +86,7 @@ class Utils {
 
     static getSSI(current_demand, total_demand){
         let shortage = current_demand / total_demand;
-        let ssi = Math.log2(shortage) * this.sign(shortage);
+        let ssi = Math.log2(1 + shortage) * this.sign(shortage);
         return ssi;
     }
 }

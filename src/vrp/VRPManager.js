@@ -122,53 +122,53 @@ function _initPrivateMembers(that) {
     return travelData;
   };
   _private.selectNearData = (travelData) => {
-    let tableNear = [];
-    let countNear = 1;
+    let result = [];
     let selected = [];
-    let x = 1;
     for (let truckData of travelData) {
       // 过滤掉已完成配送的受灾点
       let data = truckData.filter(item => {
         let area = _private.disasterAreas.get(item.areaId);
         return !area.isCompleted();
       });
+
       // 过滤掉已选择的受灾点
       data = data.filter(item => !selected.includes(item.areaId));
+
       // 按行驶时间排序
       data.sort((a, b) => a.travelTime - b.travelTime);
-      let nearData = data.slice(0, countNear);
-      // 将nearData添加到tableNear中
-      tableNear.push(...nearData);
+
+      // 选取行驶时间最短的
+      let nearData = data.slice(0, 1);
+      result.push(...nearData);
+
+      // 将已选择的受灾点添加到selected中
       selected.push(...nearData.map(item => item.areaId));
     }
-    // 对tableNear按行驶时间由短到长排序,
-    tableNear.sort((a, b) => a.travelTime - b.travelTime);
-
-    // 选取m+x个travelTime最短的,要求truckId和areaId不重复
-    let nearData = tableNear.slice(0, count + x);
-    // nearData中随机返回m个
-    let result = Utils.randomSelect(nearData, count);
     return result;
   };
-  _private.selectEmergencyData = (travelData, count) => {
-    let tableEmergency = [];
-    let countEmergency = 1;
-    let y = 1;
+  _private.selectEmergencyData = (travelData) => {
+    let result = [];
+    let selected = [];
     for (let truckData of travelData) {
+      // 过滤掉已完成配送的受灾点
       let data = truckData.filter(item => {
         let area = _private.disasterAreas.get(item.areaId);
         return !area.isCompleted();
       });
+
+      // 过滤掉已选择的受灾点
+      data = data.filter(item => !selected.includes(item.areaId));
+
+      // 按紧急程度排序
       data.sort((a, b) => b.emergency - a.emergency);
-      let emergencyData = data.slice(0, countEmergency);
-      tableEmergency.push(...emergencyData);
+      // 选取紧急程度最高的
+      let emergencyData = data.slice(0, 1);
+      result.push(...emergencyData);
+
+      // 将已选择的受灾点添加到selected中
+      selected.push(...emergencyData.map(item => item.areaId));
     }
-    // 对tableEmergency按紧急程度由高到低排序,选取m+y个最紧急的
-    tableEmergency.sort((a, b) => b.emergency - a.emergency);
-    let emergencyData = tableEmergency.slice(0, count + y);
-    // emergencyData中随机返回m个
-    let result = Utils.randomSelect(emergencyData, count);
-    return result;;
+    return result;
   };
   _private.updateData = (data) => {
     data.forEach(item => {
