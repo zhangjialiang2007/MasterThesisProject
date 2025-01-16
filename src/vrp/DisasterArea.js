@@ -25,6 +25,16 @@ class DisasterArea extends Node {
 
   // 接收物资
   receive(amount, time) {
+    if(time.getTime() > this.limit_time.getTime()){
+      console.error('时间超出限制,调整策略');
+      return;
+    }
+
+    if(this.current_demand < this.total_demand && this.current_demand > amount){
+      console.error('第二次配送必须全部满足需求,调整策略');
+      return;
+    }
+
     this.delivery_time = time;
     // 先更新SCI
     this._updateSCI();

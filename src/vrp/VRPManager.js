@@ -54,14 +54,21 @@ function _initPrivateMembers(that) {
     while (areas.length > 0) {
       // 获取救援车辆到各个受灾点的行驶时间和抵达时间
       let travelData = _private.getTravelData(areas);
-
-      let nearTravelData = travelData.slice(0, m);
-      let nearData = _private.selectNearData(nearTravelData);
+      let nearData = _private.selectNearData(travelData, m);
       _private.updateData(nearData);
 
+      // 更新travelData
+      travelData = travelData.filter(item => {
+        for(let i = 0; i < nearData.length; i++){
+          if(item[0].truckId === nearData[i].truckId){
+            return false;
+          }
+        }
+        return true;
+      });
+
       // 从travelData中贪婪随机选取M-m个紧急程度最高的数据
-      let emergencyTravelData = travelData.slice(m);
-      let emergencyData = _private.selectEmergencyData(emergencyTravelData);
+      let emergencyData = _private.selectEmergencyData(travelData, M - m);
       _private.updateData(emergencyData);
 
       areas = areas.filter(area => !area.isCompleted());
@@ -78,6 +85,7 @@ function _initPrivateMembers(that) {
     _private.disasterAreas.values().forEach(area => {
       total_sci += area.SCI;
     });
+    solution.total_sci = total_sci;
     solution.fitness = 1 / total_sci;
 
     return solution;
@@ -121,8 +129,8 @@ function _initPrivateMembers(that) {
     }
     return travelData;
   };
-  _private.selectNearData = (travelData) => {
-    let result = [];
+  _private.selectNearData = (travelData, count) => {
+    let tableNear = [];
     let selected = [];
     for (let truckData of travelData) {
       // 过滤掉已完成配送的受灾点
@@ -138,16 +146,27 @@ function _initPrivateMembers(that) {
       data.sort((a, b) => a.travelTime - b.travelTime);
 
       // 选取行驶时间最短的
-      let nearData = data.slice(0, 1);
-      result.push(...nearData);
+      let nearData = data.slice(0, _private.config.countNear);
+
+      // 将nearData添加到tableNear中
+      tableNear.push(...nearData);
 
       // 将已选择的受灾点添加到selected中
       selected.push(...nearData.map(item => item.areaId));
     }
+    // 对tableNear按行驶时间由短到长排序,
+    tableNear.sort((a, b) => a.travelTime - b.travelTime);
+
+    // 选取m+x个travelTime最短的,要求truckId和areaId不重复
+    let nearData = tableNear.slice(0, count + _private.config.x);
+    
+    // nearData中随机返回m个
+    let result = Utils.randomSelect(nearData, count);
+
     return result;
   };
-  _private.selectEmergencyData = (travelData) => {
-    let result = [];
+  _private.selectEmergencyData = (travelData, count) => {
+    let tableEmergency = [];
     let selected = [];
     for (let truckData of travelData) {
       // 过滤掉已完成配送的受灾点
@@ -161,14 +180,22 @@ function _initPrivateMembers(that) {
 
       // 按紧急程度排序
       data.sort((a, b) => b.emergency - a.emergency);
+
       // 选取紧急程度最高的
-      let emergencyData = data.slice(0, 1);
-      result.push(...emergencyData);
+      let emergencyData = data.slice(0, _private.config.countEmergency);
+      tableEmergency.push(...emergencyData);
 
       // 将已选择的受灾点添加到selected中
       selected.push(...emergencyData.map(item => item.areaId));
     }
-    return result;
+
+     // 对tableEmergency按紧急程度由高到低排序,选取count+y个最紧急的
+    tableEmergency.sort((a, b) => b.emergency - a.emergency);
+    let emergencyData = tableEmergency.slice(0, count + _private.config.y);
+
+    // emergencyData中随机返回count个
+    let result = Utils.randomSelect(emergencyData, count);
+    return result;;
   };
   _private.updateData = (data) => {
     data.forEach(item => {
@@ -271,28 +298,54 @@ function _initPrivateMembers(that) {
   // #endregion
 
   // 交叉操作
-  _private.crossover = (code1, code2) => {
+  _private.crossover = (solution1, solution2) => {
+    let result = new Solution();
+
+    
 
     return result;
   };
   // 变异操作
   _private.mutate = (solution) => {
-    let code = _private.encodeSolution(solution);
-    let decoded = _private.decodeSolution(code);
-    return decoded;
+    let result = new Solution();
+
+    for(let {truckId, queue} of  solution.deliveryQueue) {
+      let cloneQueue = Utils.deepCopy(queue);
+
+      // 随机一个0或1
+      let reversed = Math.random() < 0.5 ? 1 : 0;
+      if(reversed === 1){
+        let reversedArr = cloneQueue.map((value, index) => ({ value, index })).sort((a, b) => b.index - a.index).map(({ value }) => value);
+        result.addDeliveryQueue(truckId, reversedArr);
+      }else{
+        result.addDeliveryQueue(truckId, cloneQueue);
+      }
+    };
+    return result;
   };
   // 选择操作
-  _private.select = (solution) => {
-    let code = _private.encodeSolution(solution);
-    let decoded = _private.decodeSolution(code);
-    return decoded;
+  _private.select = (solutions) => {
+
   };
   // 适应度计算
   _private.fitness = (solution) => {
+    _private.resetData();
 
+    let mark = false
+    let queque = Utils.deepCopy(solution.deliveryQueue);
+    for(let {key, value} of queque){
+      
+      _private.updateData(data);
+    }
+
+    queque.forEach(queue => {
+      _private.updateData(queue);
+    });
 
 
   };
+
+
   // 重置数据
   _private.resetData = () => {
     _private.trucks.forEach(truck => {
@@ -308,6 +361,10 @@ function _initPrivateMembers(that) {
     _private.config.maxIter = data.maxIter;
     _private.config.baseSolutionCount = data.baseSolutionCount;
     _private.config.nearTruckCount = data.nearTruckCount;
+    _private.config.countNear = data.countNear;
+    _private.config.countEmergency = data.countEmergency;
+    _private.config.x = data.x;
+    _private.config.y = data.y;
   };
   _private.initRescueCenter = (data) => {
     _private.rescueCenter = new RescueCenter(data);
@@ -391,6 +448,10 @@ class VRPManager {
   getBestSolution(){
     let _private = this[__.private];
     let solutions = _private.generateBaseSolutions();
+
+    // 遗传迭代
+
+
     let bestSolution = solutions[0];
     return bestSolution;
   }

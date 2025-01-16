@@ -2,7 +2,6 @@ class Solution {
     constructor() {
        this.fitness = 0;
        this.deliveryQueue = new Map();
-       this.code = null;
     }
 
     addDeliveryQueue(truckId, queue){

@@ -21,12 +21,12 @@ class Truck {
   delivery(area, arrivalTime) {
     // 更新救援车辆的剩余载重和受灾点的剩余需求
     if(this.remain >= area.current_demand) {
-      this.remain -= area.current_demand;
       area.receive(area.current_demand, arrivalTime);
+      this.remain -= area.current_demand;
     }
     else {
-      this.remain = 0;
       area.receive(this.remain, arrivalTime);
+      this.remain = 0;
     }
 
     // 更新救援车辆的当前位置和当前时间

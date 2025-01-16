@@ -1,5 +1,9 @@
 {
     "maxIter": 100,
     "baseSolutionCount": 10,
-    "nearTruckCount": 2
+    "nearTruckCount": 2,
+    "countNear": 1,
+    "x": 1,
+    "countEmergency": 1,
+    "y": 1
 }
