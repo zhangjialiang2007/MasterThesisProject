@@ -89,6 +89,15 @@ class Utils {
         let ssi = Math.log2(1 + shortage) * this.sign(shortage);
         return ssi;
     }
+
+    static getRandomMapElement(map){
+        // 将Map的键值对转换为一个数组
+        const entries = Array.from(map.entries());
+        // 生成一个随机索引
+        const randomIndex = Math.floor(Math.random() * entries.length); 
+        // 返回随机选择的键值对
+        return entries[randomIndex];
+    }
 }
 
 export {Utils};

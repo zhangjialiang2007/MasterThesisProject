@@ -299,8 +299,12 @@ function _initPrivateMembers(that) {
 
   // 交叉操作
   _private.crossover = (solution1, solution2) => {
-    let result = new Solution();
+    let item = Utils.getRandomMapElement(solution1.deliveryQueue);
+        
+    let queue2 = solution2.deliveryQueue;
 
+    let result = new Solution();
+  
     
 
     return result;
@@ -449,8 +453,16 @@ class VRPManager {
     let _private = this[__.private];
     let solutions = _private.generateBaseSolutions();
 
-    // 遗传迭代
+    // 交叉
+    _private.crossover(solutions[0], solutions[1]);
 
+    // 变异
+    _private.mutate(solutions[2])
+
+    // 选择
+
+
+    
 
     let bestSolution = solutions[0];
     return bestSolution;
