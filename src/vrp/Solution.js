@@ -1,5 +1,6 @@
 class Solution {
     constructor() {
+       this.total_sci = 0;
        this.fitness = 0;
        this.deliveryQueue = new Map();
     }

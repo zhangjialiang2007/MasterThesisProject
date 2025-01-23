@@ -58,9 +58,9 @@ function _initPrivateMembers(that) {
       _private.updateData(nearData);
 
       // 更新travelData
-      travelData = travelData.filter(item => {
-        for(let i = 0; i < nearData.length; i++){
-          if(item[0].truckId === nearData[i].truckId){
+      travelData = travelData.filter((item) => {
+        for (let i = 0; i < nearData.length; i++) {
+          if (item[0].truckId === nearData[i].truckId) {
             return false;
           }
         }
@@ -71,18 +71,18 @@ function _initPrivateMembers(that) {
       let emergencyData = _private.selectEmergencyData(travelData, M - m);
       _private.updateData(emergencyData);
 
-      areas = areas.filter(area => !area.isCompleted());
+      areas = areas.filter((area) => !area.isCompleted());
     }
 
     // 将救援车辆配送队列添加到solution中
-    _private.trucks.forEach(truck => {
+    _private.trucks.forEach((truck) => {
       let queue = Utils.deepCopy(truck.deliveryQueue);
       solution.addDeliveryQueue(truck.id, queue);
     });
 
     // 计算解决方案的适应度
     let total_sci = 0;
-    _private.disasterAreas.values().forEach(area => {
+    _private.disasterAreas.values().forEach((area) => {
       total_sci += area.SCI;
     });
     solution.total_sci = total_sci;
@@ -97,7 +97,7 @@ function _initPrivateMembers(that) {
       let truckData = [];
       for (let area of areas) {
         // 过滤掉已完成配送的受灾点
-        if(area.isCompleted()){
+        if (area.isCompleted()) {
           continue;
         }
 
@@ -134,13 +134,13 @@ function _initPrivateMembers(that) {
     let selected = [];
     for (let truckData of travelData) {
       // 过滤掉已完成配送的受灾点
-      let data = truckData.filter(item => {
+      let data = truckData.filter((item) => {
         let area = _private.disasterAreas.get(item.areaId);
         return !area.isCompleted();
       });
 
       // 过滤掉已选择的受灾点
-      data = data.filter(item => !selected.includes(item.areaId));
+      data = data.filter((item) => !selected.includes(item.areaId));
 
       // 按行驶时间排序
       data.sort((a, b) => a.travelTime - b.travelTime);
@@ -152,14 +152,14 @@ function _initPrivateMembers(that) {
       tableNear.push(...nearData);
 
       // 将已选择的受灾点添加到selected中
-      selected.push(...nearData.map(item => item.areaId));
+      selected.push(...nearData.map((item) => item.areaId));
     }
     // 对tableNear按行驶时间由短到长排序,
     tableNear.sort((a, b) => a.travelTime - b.travelTime);
 
     // 选取m+x个travelTime最短的,要求truckId和areaId不重复
     let nearData = tableNear.slice(0, count + _private.config.x);
-    
+
     // nearData中随机返回m个
     let result = Utils.randomSelect(nearData, count);
 
@@ -170,13 +170,13 @@ function _initPrivateMembers(that) {
     let selected = [];
     for (let truckData of travelData) {
       // 过滤掉已完成配送的受灾点
-      let data = truckData.filter(item => {
+      let data = truckData.filter((item) => {
         let area = _private.disasterAreas.get(item.areaId);
         return !area.isCompleted();
       });
 
       // 过滤掉已选择的受灾点
-      data = data.filter(item => !selected.includes(item.areaId));
+      data = data.filter((item) => !selected.includes(item.areaId));
 
       // 按紧急程度排序
       data.sort((a, b) => b.emergency - a.emergency);
@@ -186,19 +186,19 @@ function _initPrivateMembers(that) {
       tableEmergency.push(...emergencyData);
 
       // 将已选择的受灾点添加到selected中
-      selected.push(...emergencyData.map(item => item.areaId));
+      selected.push(...emergencyData.map((item) => item.areaId));
     }
 
-     // 对tableEmergency按紧急程度由高到低排序,选取count+y个最紧急的
+    // 对tableEmergency按紧急程度由高到低排序,选取count+y个最紧急的
     tableEmergency.sort((a, b) => b.emergency - a.emergency);
     let emergencyData = tableEmergency.slice(0, count + _private.config.y);
 
     // emergencyData中随机返回count个
     let result = Utils.randomSelect(emergencyData, count);
-    return result;;
+    return result;
   };
   _private.updateData = (data) => {
-    data.forEach(item => {
+    data.forEach((item) => {
       let truck = _private.trucks.get(item.truckId);
       let area = _private.disasterAreas.get(item.areaId);
       truck.delivery(area, item.arrivalTime);
@@ -209,13 +209,13 @@ function _initPrivateMembers(that) {
   // #region 编解码
   _private.encodeDeliveryQueue = (queue) => {
     let queueCode = new Map();
-    for(let {id, data } of _private.disasterAreas){
+    for (let { id, data } of _private.disasterAreas) {
       queueCode.set(id, []);
     }
 
     let round = 1; // 轮次
     let order = 1; // 轮次中的顺序
-    queue.forEach(id => {
+    queue.forEach((id) => {
       // 如果返回救援中心，则需要增加轮次
       if (id === _private.rescueCenter.id) {
         round++;
@@ -230,13 +230,13 @@ function _initPrivateMembers(that) {
         order: order,
       });
       order++;
-    })
+    });
     return queueCode;
   };
   _private.encodeSolution = (solution) => {
     let solutionCode = [];
     let deliveryQueue = solution.getDeliveryQueue();
-    deliveryQueue.values.forEach(queue => {
+    deliveryQueue.values.forEach((queue) => {
       let queueCode = _private.encodeDeliveryQueue(queue);
       solutionCode.push(...queueCode);
     });
@@ -245,21 +245,21 @@ function _initPrivateMembers(that) {
   _private.decodeDeliveryQueue = (queueCode) => {
     // 获取非空配送列表，并将配送列表按轮次排序
     let realQueueCode = [];
-    for(let {id, data} of queueCode){
-      if(data.length > 0){
+    for (let { id, data } of queueCode) {
+      if (data.length > 0) {
         let item = {
           areaId: id,
-          data: data.sort((a, b) => a.round - b.round)
-        }
+          data: data.sort((a, b) => a.round - b.round),
+        };
         realQueueCode.push(item);
       }
     }
 
     let queue = [];
-    while(realQueueCode.length > 0){
+    while (realQueueCode.length > 0) {
       // 当前轮配送数组
       let currentRoundQueue = [];
-      realQueueCode.forEach(item => {
+      realQueueCode.forEach((item) => {
         let data = item.data.shift();
         currentRoundQueue.push({
           areaId: item.areaId,
@@ -268,12 +268,12 @@ function _initPrivateMembers(that) {
       });
       // 当前轮次配送数组
       currentRoundQueue = currentRoundQueue.sort((a, b) => a.order - b.order);
-      currentRoundQueue.forEach(item => {
+      currentRoundQueue.forEach((item) => {
         queue.push(item.areaId);
       });
       queue.push(_private.rescueCenter.id);
 
-      realQueueCode = realQueueCode.filter(item => item.data.length > 0);
+      realQueueCode = realQueueCode.filter((item) => item.data.length > 0);
     }
 
     return queue;
@@ -289,23 +289,50 @@ function _initPrivateMembers(that) {
 
     // 初始化结果数组
     let result = [];
-    solutionCode.forEach(queueCode => {
+    solutionCode.forEach((queueCode) => {
       let queue = _private.decodeDeliveryQueue(queueCode);
       result.push(queue);
-    })
+    });
     return result;
   };
   // #endregion
 
   // 交叉操作
   _private.crossover = (solution1, solution2) => {
-    let item = Utils.getRandomMapElement(solution1.deliveryQueue);
-        
-    let queue2 = solution2.deliveryQueue;
-
     let result = new Solution();
-  
-    
+
+    // 在solution1中随机选择一个救援车辆
+    let item = Utils.getRandomMapElement(solution1.deliveryQueue);
+
+    // 将solution2中将救援车辆的配送队列中属于item的受灾区域删除
+    let tempQueueArray = [];
+    solution2.deliveryQueue.forEach((value, key) => {
+      let queue = Utils.deepCopy(value);
+      let tempQueue = queue.filter(function (value) {
+        if (value == 0) {
+          return false;
+        }
+        for (let i = 0; i < item.value.length; i++) {
+          if (item.value[i] === value) {
+            return false;
+          }
+        }
+        return true;
+      });
+      tempQueueArray.push(tempQueue);
+    });
+
+    // 将tempQueueArray数组中长度最短的两个元素进行合并
+    if (tempQueueArray.length == _private.trucks.size) {
+      tempQueueArray = Utils.mergeQueueArray(tempQueueArray);
+    }
+
+    // 将合并后的元素添加到result中
+    result.addDeliveryQueue(0, item.value);
+    for (let i = 0; i < tempQueueArray.length; i++) {
+      let truckId = i + 1;
+      result.addDeliveryQueue(truckId, tempQueueArray[i]);
+    }
 
     return result;
   };
@@ -313,38 +340,37 @@ function _initPrivateMembers(that) {
   _private.mutate = (solution) => {
     let result = new Solution();
 
-    for(let {truckId, queue} of  solution.deliveryQueue) {
-      let cloneQueue = Utils.deepCopy(queue);
+    solution.deliveryQueue.forEach((value, key) => {
+      let queue = Utils.deepCopy(value);
+      let truckId = key;
 
       // 随机一个0或1
       let reversed = Math.random() < 0.5 ? 1 : 0;
-      if(reversed === 1){
-        let reversedArr = cloneQueue.map((value, index) => ({ value, index })).sort((a, b) => b.index - a.index).map(({ value }) => value);
+      if (reversed === 1) {
+        let reversedArr = queue
+          .map((value, index) => ({ value, index }))
+          .sort((a, b) => b.index - a.index)
+          .map(({ value }) => value);
         result.addDeliveryQueue(truckId, reversedArr);
-      }else{
-        result.addDeliveryQueue(truckId, cloneQueue);
+      } else {
+        result.addDeliveryQueue(truckId, queue);
       }
-    };
+    });
     return result;
   };
-  // 选择操作
-  _private.select = (solutions) => {
-
-  };
-  // 适应度计算
-  _private.fitness = (solution) => {
+  // 模拟配送，用于计算子代的适应度和SCI
+  _private.simulate = (solution) => {
     _private.resetData();
 
-    let mark = false
     let queque = Utils.deepCopy(solution.deliveryQueue);
-    for(let {key, value} of queque){
-      
+    let index = 0;
+    for (let { key, value } of queque) {
       _private.updateData(data);
     }
+  };
 
-    queque.forEach(queue => {
-      _private.updateData(queue);
-    });
+  // 选择操作
+  _private.select = (solutions) => {
 
 
   };
@@ -352,10 +378,10 @@ function _initPrivateMembers(that) {
 
   // 重置数据
   _private.resetData = () => {
-    _private.trucks.forEach(truck => {
+    _private.trucks.forEach((truck) => {
       truck.reset();
     });
-    _private.disasterAreas.forEach(area => {
+    _private.disasterAreas.forEach((area) => {
       area.reset();
     });
   };
@@ -381,7 +407,7 @@ function _initPrivateMembers(that) {
     _private.unfinishedDisasterAreas = new Map([..._private.disasterAreas]);
   };
   _private.getPoint = (id) => {
-    if(id === _private.rescueCenter.id){
+    if (id === _private.rescueCenter.id) {
       return _private.rescueCenter;
     }
     return _private.disasterAreas.get(id);
@@ -395,25 +421,25 @@ function _initPrivateMembers(that) {
         id: roadData.id,
         from: from,
         to: to,
-        travelTime: roadData.travelTime
+        travelTime: roadData.travelTime,
       });
       _private.roads.set(road.id, road);
     }
   };
   _private.initTrucks = (data) => {
     for (let i = 0; i < data.count; i++) {
-      let truck = new Truck({ 
+      let truck = new Truck({
         manager: that,
         id: i,
         capacity: data.capacity,
         startPos: data.startPos,
-        startTime: data.startTime
+        startTime: data.startTime,
       });
       _private.trucks.set(truck.id, truck);
     }
   };
   _private.init = async (param) => {
-    // config 
+    // config
     let configData = await Utils.fetchJson(param.configPath);
     _private.initConfig(configData);
     // rescueCenter
@@ -435,7 +461,7 @@ function _initPrivateMembers(that) {
       nodes,
       edges,
     });
-    _private.navTool = new TimeDependentDijkstra( graph );
+    _private.navTool = new TimeDependentDijkstra(graph);
   };
   // #endregion
 }
@@ -444,35 +470,34 @@ class VRPManager {
     _initPrivateMembers(this);
   }
 
-  async init(param){
+  async init(param) {
     let _private = this[__.private];
     await _private.init(param);
   }
 
-  getBestSolution(){
+  getBestSolution() {
     let _private = this[__.private];
     let solutions = _private.generateBaseSolutions();
 
     // 交叉
-    _private.crossover(solutions[0], solutions[1]);
+    let child1 = _private.crossover(solutions[0], solutions[1]);
 
     // 变异
-    _private.mutate(solutions[2])
+    let child2 = _private.mutate(solutions[2]);
+
+    // 模拟配送
+    _private.simulate(child1);
+    _private.simulate(child2);
 
     // 选择
-
-
-    
-
-    let bestSolution = solutions[0];
     return bestSolution;
   }
 
-  getNavTool(){
+  getNavTool() {
     let _private = this[__.private];
     return _private.navTool;
   }
-  getRescueCenter(){
+  getRescueCenter() {
     let _private = this[__.private];
     return _private.rescueCenter;
   }
