@@ -143,6 +143,29 @@ class Utils {
 
     return queueArray;
   }
+
+  // 获取数组中若干个随机索引
+  static getRandomIndexes(arr, count) {
+    // 检查数组长度是否至少为count
+    if (arr.length < count) {
+        throw new Error("数组长度小于count");
+    }
+ 
+    // 生成包含所有有效索引的数组
+    const indexes = Array.from({ length: arr.length }, (_, i) => i);
+ 
+    // 从索引数组中随机选择三个索引
+    const randomIndexes = [];
+    while (randomIndexes.length < count) {
+        const randomIndex = Math.floor(Math.random() * indexes.length);
+        // 如果索引不在结果数组中，则添加它
+        if (!randomIndexes.includes(randomIndex)) {
+            randomIndexes.push(randomIndex);
+        }
+    }
+ 
+    return randomIndexes;
+}
 }
 
 export { Utils };

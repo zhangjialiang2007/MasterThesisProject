@@ -19,6 +19,11 @@ class Truck {
 
   // 执行配送任务
   delivery(area, arrivalTime) {
+    // 查看受灾区域是否配送完毕
+    if(area.isCompleted()) {
+      return;
+    }
+
     // 更新救援车辆的剩余载重和受灾点的剩余需求
     if(this.remain >= area.current_demand) {
       area.receive(area.current_demand, arrivalTime);

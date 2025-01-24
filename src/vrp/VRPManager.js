@@ -24,6 +24,25 @@ function _initPrivateMembers(that) {
   _private.startTime = 0;
   // #endregion
 
+  _private.getSolution = () => {
+    let solution = new Solution();
+    // 将救援车辆配送队列添加到solution中
+    _private.trucks.forEach((truck) => {
+      let queue = Utils.deepCopy(truck.deliveryQueue);
+      solution.addDeliveryQueue(truck.id, queue);
+    });
+
+    // 计算解决方案的适应度
+    let total_sci = 0;
+    _private.disasterAreas.values().forEach((area) => {
+      total_sci += area.SCI;
+    });
+    solution.total_sci = total_sci;
+    solution.fitness = 1 / total_sci;
+
+    return solution;
+  };
+
   // #region 基础解生成
   _private.generateBaseSolutions = () => {
     let solutions = [];
@@ -43,7 +62,6 @@ function _initPrivateMembers(that) {
     return solutions;
   };
   _private.generateBaseSolution = () => {
-    let solution = new Solution();
     // 重置数据
     _private.resetData();
     // 未配送受灾区域，需要深拷贝避免修改源数据
@@ -74,21 +92,7 @@ function _initPrivateMembers(that) {
       areas = areas.filter((area) => !area.isCompleted());
     }
 
-    // 将救援车辆配送队列添加到solution中
-    _private.trucks.forEach((truck) => {
-      let queue = Utils.deepCopy(truck.deliveryQueue);
-      solution.addDeliveryQueue(truck.id, queue);
-    });
-
-    // 计算解决方案的适应度
-    let total_sci = 0;
-    _private.disasterAreas.values().forEach((area) => {
-      total_sci += area.SCI;
-    });
-    solution.total_sci = total_sci;
-    solution.fitness = 1 / total_sci;
-
-    return solution;
+    return _private.getSolution();
   };
   _private.getTravelData = (areas) => {
     let travelData = [];
@@ -362,19 +366,88 @@ function _initPrivateMembers(that) {
   _private.simulate = (solution) => {
     _private.resetData();
 
-    let queque = Utils.deepCopy(solution.deliveryQueue);
-    let index = 0;
-    for (let { key, value } of queque) {
-      _private.updateData(data);
+    while (solution.deliveryQueue.size > 0) {
+      for (const [truckID, queue] of solution.deliveryQueue) {
+        // 获取救援车辆
+        let truck = _private.trucks.get(truckID);
+        // 获取受灾点
+        let areaId = queue.shift();
+        let area = _private.disasterAreas.get(areaId);
+        if (!area || area.isCompleted()) {
+          continue;
+        }
+        // 获取救援车辆到受灾点的行驶时间和到达时间
+        let travelTime = _private.navTool.getShortestTime(
+          truck.currentPos,
+          area.id,
+          truck.currentTime
+        );
+        let arrivalTime = Utils.addTime(truck.currentTime, travelTime);
+
+        // 执行配送
+        truck.delivery(area, arrivalTime);
+      }
+
+      // 检查救援车辆配送队列是否完成
+      solution.deliveryQueue.forEach((queue, truckID) => {
+        if (queue.length === 0) {
+          solution.deliveryQueue.delete(truckID);
+        }
+      });
     }
+
+    return _private.getSolution();
   };
 
   // 选择操作
-  _private.select = (solutions) => {
-
-
-  };
-
+  _private.select = (solutions, count) => {
+    const populationSize = solutions.length;
+    const selectedIndices = new Set();
+ 
+    // 计算适应度总和
+    let totalFitness = 0;
+    solutions.forEach(item => {
+      totalFitness += item.fitness;
+    })
+ 
+    // 如果没有适应度或者要选择的数量超过种群大小，直接返回错误或调整
+    if (totalFitness === 0) {
+        throw new Error('适应度总和为零，无法进行轮盘赌选择');
+    }
+    if (count > populationSize) {
+        console.warn(`警告：要选择的数量(${count})超过了种群大小(${populationSize})，将选择整个种群`);
+        return solutions;
+    }
+ 
+    // 创建累积适应度数组
+    const cumulativeFitnesses = [];
+    let cumulativeFitness = 0;
+    for (let i = 0; i < populationSize; i++) {
+        cumulativeFitness += solutions[i].fitness;
+        cumulativeFitnesses.push(cumulativeFitness);
+    }
+ 
+    // 进行轮盘赌选择
+    while(selectedIndices.size < count) {
+        // 生成一个0到totalFitness之间的随机数
+        const randomPoint = Math.random() * totalFitness;
+ 
+        // 默认设置为最后一个索引
+        let selectedIndex = populationSize - 1; 
+        for (let i = 0; i < populationSize; i++) {
+            if (cumulativeFitnesses[i] >= randomPoint) {
+                selectedIndex = i;
+                break;
+            }
+        }
+ 
+        // 将选中的索引添加到结果数组中
+        selectedIndices.add(selectedIndex);
+    }
+ 
+     // 将Set转换为数组，并使用map方法获取对应的solutions元素
+     return [...selectedIndices].map(index => solutions[index]);
+}
 
   // 重置数据
   _private.resetData = () => {
@@ -479,18 +552,26 @@ class VRPManager {
     let _private = this[__.private];
     let solutions = _private.generateBaseSolutions();
 
+    let indexes = Utils.getRandomIndexes(solutions, 3);
     // 交叉
-    let child1 = _private.crossover(solutions[0], solutions[1]);
+    let child1 = _private.crossover(
+      solutions[indexes[0]],
+      solutions[indexes[1]]
+    );
 
     // 变异
     let child2 = _private.mutate(solutions[2]);
 
     // 模拟配送
-    _private.simulate(child1);
-    _private.simulate(child2);
+    let solution = _private.simulate(child1);
+    solutions.push(solution);
+    solution = _private.simulate(child2);
+    solutions.push(solution);
 
     // 选择
-    return bestSolution;
+    let selectedSolutions = _private.select(solutions, 5);
+
+    return selectedSolutions;
   }
 
   getNavTool() {
