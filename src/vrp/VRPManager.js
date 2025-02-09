@@ -307,8 +307,9 @@ function _initPrivateMembers(that) {
 
     // 在solution1中随机选择一个救援车辆
     let item = Utils.getRandomMapElement(solution1.deliveryQueue);
+    item = Utils.deepCopy(item.value);
 
-    // 将solution2中将救援车辆的配送队列中属于item的受灾区域删除
+    // 将solution2中将救援车辆的配送队列中属于ite 的受灾区域删除
     let tempQueueArray = [];
     solution2.deliveryQueue.forEach((value, key) => {
       let queue = Utils.deepCopy(value);
@@ -316,8 +317,8 @@ function _initPrivateMembers(that) {
         if (value == 0) {
           return false;
         }
-        for (let i = 0; i < item.value.length; i++) {
-          if (item.value[i] === value) {
+        for (let i = 0; i < item.length; i++) {
+          if (item[i] === value) {
             return false;
           }
         }
@@ -332,7 +333,7 @@ function _initPrivateMembers(that) {
     }
 
     // 将合并后的元素添加到result中
-    result.addDeliveryQueue(0, item.value);
+    result.addDeliveryQueue(0, item);
     for (let i = 0; i < tempQueueArray.length; i++) {
       let truckId = i + 1;
       result.addDeliveryQueue(truckId, tempQueueArray[i]);
@@ -403,7 +404,11 @@ function _initPrivateMembers(that) {
   _private.select = (solutions, count) => {
     const populationSize = solutions.length;
     const selectedIndices = new Set();
- 
+
+    // 排序
+    solutions.sort((a, b) => a.total_sci - b.total_sci);
+    selectedIndices.add(0);
+
     // 计算适应度总和
     let totalFitness = 0;
     solutions.forEach(item => {
@@ -552,26 +557,32 @@ class VRPManager {
     let _private = this[__.private];
     let solutions = _private.generateBaseSolutions();
 
-    let indexes = Utils.getRandomIndexes(solutions, 3);
-    // 交叉
-    let child1 = _private.crossover(
-      solutions[indexes[0]],
-      solutions[indexes[1]]
-    );
+    let index = 0;
+    while(index < _private.config.maxIter){
+      let indexes = Utils.getRandomIndexes(solutions, 3);
+      // 交叉
+      let child1 = _private.crossover(
+        solutions[indexes[0]],
+        solutions[indexes[1]]
+      );
+      // 变异
+      let child2 = _private.mutate(solutions[indexes[2]]);
+  
+      // 模拟配送
+      let solution = _private.simulate(child1);
+      solutions.push(solution);
+      solution = _private.simulate(child2);
+      solutions.push(solution);
+      // 选择
+      solutions = _private.select(solutions, 5);
 
-    // 变异
-    let child2 = _private.mutate(solutions[2]);
+      index++
+    }
 
-    // 模拟配送
-    let solution = _private.simulate(child1);
-    solutions.push(solution);
-    solution = _private.simulate(child2);
-    solutions.push(solution);
+    // 对solutions按照每个元素的total_sci进行从小到大排序
+    solutions.sort((a, b) => a.total_sci - b.total_sci);
 
-    // 选择
-    let selectedSolutions = _private.select(solutions, 5);
-
-    return selectedSolutions;
+    return solutions[0];
   }
 
   getNavTool() {
