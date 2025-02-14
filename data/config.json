@@ -1,5 +1,5 @@
 {
-    "maxIter": 50,
+    "maxIter": 5,
     "baseSolutionCount": 10,
     "nearTruckCount": 2,
     "countNear": 1,
