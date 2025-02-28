@@ -349,15 +349,24 @@ function _initPrivateMembers(that) {
       let queue = Utils.deepCopy(value);
       let truckId = key;
 
-      // 随机一个0或1
+      // 随机一个0或1，1进行逆转排序，0进行交换排序
       let reversed = Math.random() < 0.5 ? 1 : 0;
       if (reversed === 1) {
+        // 逆转变异
         let reversedArr = queue
           .map((value, index) => ({ value, index }))
           .sort((a, b) => b.index - a.index)
           .map(({ value }) => value);
         result.addDeliveryQueue(truckId, reversedArr);
       } else {
+        // 交换变异
+        if(queue.length >= 2){
+          let indexes = Utils.getRandomIndexes(queue, 2);
+          let temp = queue[indexes[1]];
+          queue[indexes[1]] = queue[indexes[2]];
+          queue[indexes[2]] = temp;
+        }
+
         result.addDeliveryQueue(truckId, queue);
       }
     });
@@ -561,22 +570,46 @@ class VRPManager {
     while(index < _private.config.maxIter){
       let indexes = Utils.getRandomIndexes(solutions, 3);
       // 交叉
-      let child1 = _private.crossover(
+      let crossChild1 = _private.crossover(
         solutions[indexes[0]],
         solutions[indexes[1]]
       );
+      let crossChild2 = _private.crossover(
+        solutions[indexes[2]],
+        solutions[indexes[1]]
+      );
+      let crossChild3 = _private.crossover(
+        solutions[indexes[0]],
+        solutions[indexes[2]]
+      );
       // 变异
-      let child2 = _private.mutate(solutions[indexes[2]]);
+      let multeChild1 = _private.mutate(solutions[indexes[0]]);
+      let multeChild2 = _private.mutate(solutions[indexes[1]]);
+      let multeChild3 = _private.mutate(solutions[indexes[2]]);
   
       // 模拟配送
-      let solution = _private.simulate(child1);
+      let solution = _private.simulate(crossChild1);
       solutions.push(solution);
-      solution = _private.simulate(child2);
+      solution = _private.simulate(crossChild2);
       solutions.push(solution);
+      solution = _private.simulate(crossChild3);
+      solutions.push(solution);
+      solution = _private.simulate(multeChild1);
+      solutions.push(solution);
+      solution = _private.simulate(multeChild2);
+      solutions.push(solution);
+      solution = _private.simulate(multeChild3);
+      solutions.push(solution);
+
       // 选择
-      solutions = _private.select(solutions, 5);
+      solutions = _private.select(solutions, 8);
 
       index++
+
+      if(index % 2 == 0){
+        solutions.sort((a, b) => a.total_sci - b.total_sci);
+        console.log('times:',index,'solution:', solutions[0])
+      }
     }
 
     // 对solutions按照每个元素的total_sci进行从小到大排序
