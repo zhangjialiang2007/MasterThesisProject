@@ -303,6 +303,7 @@ function _initPrivateMembers(that) {
 
   // 交叉操作
   _private.crossover = (solution1, solution2) => {
+    debugger
     let result = new Solution();
 
     // 在solution1中随机选择一个救援车辆
