@@ -310,7 +310,7 @@ function _initPrivateMembers(that) {
     let item = Utils.getRandomMapElement(solution1.deliveryQueue);
     item = Utils.deepCopy(item.value);
 
-    // 将solution2中将救援车辆的配送队列中属于ite 的受灾区域删除
+    // 将solution2中将救援车辆的配送队列中属于item 的受灾区域删除
     let tempQueueArray = [];
     solution2.deliveryQueue.forEach((value, key) => {
       let queue = Utils.deepCopy(value);
