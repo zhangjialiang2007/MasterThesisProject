@@ -86,7 +86,7 @@ class Utils {
     return sti;
   }
 
-  // 计算SCI
+  // 计算SSI
   static getSSI(current_demand, total_demand) {
     let shortage = current_demand / total_demand;
     let ssi = Math.log2(1 + shortage) * this.sign(shortage);

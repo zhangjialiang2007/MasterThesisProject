@@ -462,7 +462,7 @@ function _initPrivateMembers(that) {
  
      // 将Set转换为数组，并使用map方法获取对应的solutions元素
      return [...selectedIndices].map(index => solutions[index]);
-}
+  }
 
   // 重置数据
   _private.resetData = () => {
@@ -620,42 +620,23 @@ class VRPManager {
   }
 
   getBestSolutionByOther(){
-    // 重置数据
-    _private.resetData();
-    // 未配送受灾区域，需要深拷贝避免修改源数据
-    let values = _private.disasterAreas.values().toArray();
-    let areas = values.slice();
-    let M = _private.trucks.size;
-    
-    // 将受灾区域随机给救援车辆
+    let _private = this[__.private];
+    let solution = _private.generateBaseSolution();
 
+    let index = 0;
+    while(index < _private.config.maxIter){
+      let children = [];
+      for(let i = 0; i < 5; i++){
+        let child = _private.randomInsert(solution)
+        children.push(_private.simulate(child));
+      }
 
-    // 贪婪插入
-
-
-
-    while (areas.length > 0) {
-      // 获取救援车辆到各个受灾点的行驶时间和抵达时间
-      let travelData = _private.getTravelData(areas);
-      let nearData = _private.selectNearData(travelData, m);
-      _private.updateData(nearData);
-
-      // 更新travelData
-      travelData = travelData.filter((item) => {
-        for (let i = 0; i < nearData.length; i++) {
-          if (item[0].truckId === nearData[i].truckId) {
-            return false;
-          }
-        }
-        return true;
-      });
-
-      // 从travelData中贪婪随机选取M-m个紧急程度最高的数据
-      let emergencyData = _private.selectEmergencyData(travelData, M - m);
-      _private.updateData(emergencyData);
-
-      areas = areas.filter((area) => !area.isCompleted());
+      // 选最优的；随机插入，贪婪选择：相当于贪婪插入
+      solution = _private.select(children, 1);      
+      index++;
     }
+    
+    return solution
   }
 
   getNavTool() {
