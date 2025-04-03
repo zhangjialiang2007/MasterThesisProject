@@ -373,6 +373,34 @@ function _initPrivateMembers(that) {
     });
     return result;
   };
+  // 随机删除和插入
+  _private.randomDeleteAndInsert = (solution) => {
+    // 随机删除队列和位置
+    const deleteKey = Math.floor(Math.random() * _private.trucks.size);
+    const deleteQueue = solution.deliveryQueue.get(deleteKey)
+    const deleteIndex = Math.floor(Math.random() * deleteQueue.length);
+    const areaId = deleteQueue[deleteIndex]
+
+    // 随机插入队列和位置
+    const insertKey = Math.floor(Math.random() * _private.trucks.size);
+    const insertQueue = solution.deliveryQueue.get(insertKey)
+    const insertIndex = Math.floor(Math.random() * insertQueue.length);
+
+    // 执行删除插入
+    let result = new Solution()
+    solution.deliveryQueue.forEach((value, key) => {
+      let queue = Utils.deepCopy(value);
+      if(key == deleteKey){
+        queue.splice(deleteIndex, 1); 
+      }
+      if(key == insertKey){
+        queue.splice(insertIndex, 0, areaId);
+      }
+
+      result.addDeliveryQueue(key, queue);
+    });
+    return result;
+  }
   // 模拟配送，用于计算子代的适应度和SCI
   _private.simulate = (solution) => {
     _private.resetData();
@@ -627,12 +655,13 @@ class VRPManager {
     while(index < _private.config.maxIter){
       let children = [];
       for(let i = 0; i < 5; i++){
-        let child = _private.randomInsert(solution)
+        let child = _private.randomDeleteAndInsert(solution)
         children.push(_private.simulate(child));
       }
 
       // 选最优的；随机插入，贪婪选择：相当于贪婪插入
-      solution = _private.select(children, 1);      
+      solution = _private.select(children, 1)[0];     
+      console.log(solution.total_sci) 
       index++;
     }
     
