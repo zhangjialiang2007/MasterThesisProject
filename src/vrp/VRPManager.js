@@ -492,6 +492,56 @@ function _initPrivateMembers(that) {
      return [...selectedIndices].map(index => solutions[index]);
   }
 
+  // 模拟退火选择（Simulated Annealing Select）
+  _private.SASelect = (solutions, count) => {
+    // 初始化温度
+    let temperature = 1000;
+    // 初始化冷却因子
+    let coolingFactor = 0.99;
+
+    // 计算初始适应度总和
+    let totalFitness = 0;
+    solutions.forEach(item => {
+      totalFitness += item.fitness;
+    })
+
+    // 计算初始概率
+    let initialProbability = 1;
+
+    // 初始化选择的索引集
+    let selectedIndices = new Set();
+
+    // 模拟退火选择
+    while(selectedIndices.size < count) {
+      // 生成一个0到totalFitness之间的随机数
+      const randomPoint = Math.random() * totalFitness;
+
+      // 默认设置为最后一个索引
+      let selectedIndex = populationSize - 1; 
+      for (let i = 0; i < populationSize; i++) {
+          if (cumulativeFitnesses[i] >= randomPoint) {
+              selectedIndex = i;
+              break;
+          }
+      }
+
+      // 计算接受概率
+      let acceptanceProbability = Math.exp(-(selectedIndex - initialProbability) / temperature);
+
+      // 如果接受概率大于随机数，则选择该索引
+      if (acceptanceProbability > Math.random()) {
+          selectedIndices.add(selectedIndex);
+      }
+
+      // 降低温度
+      temperature *= coolingFactor;
+    }
+
+    // 将Set转换为数组，并使用map方法获取对应的solutions元素
+    return [...selectedIndices].map(index => solutions[index]);
+  }
+  }
+
   // 重置数据
   _private.resetData = () => {
     _private.trucks.forEach((truck) => {
