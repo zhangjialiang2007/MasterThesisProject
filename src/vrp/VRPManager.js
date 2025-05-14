@@ -301,6 +301,8 @@ function _initPrivateMembers(that) {
   };
   // #endregion
 
+
+  // #region 遗传算法算子优化 
   // 交叉操作
   _private.crossover = (solution1, solution2) => {
     debugger
@@ -373,71 +375,6 @@ function _initPrivateMembers(that) {
     });
     return result;
   };
-  // 随机删除和插入
-  _private.randomDeleteAndInsert = (solution) => {
-    // 随机删除队列和位置
-    const deleteKey = Math.floor(Math.random() * _private.trucks.size);
-    const deleteQueue = solution.deliveryQueue.get(deleteKey)
-    const deleteIndex = Math.floor(Math.random() * deleteQueue.length);
-    const areaId = deleteQueue[deleteIndex]
-
-    // 随机插入队列和位置
-    const insertKey = Math.floor(Math.random() * _private.trucks.size);
-    const insertQueue = solution.deliveryQueue.get(insertKey)
-    const insertIndex = Math.floor(Math.random() * insertQueue.length);
-
-    // 执行删除插入
-    let result = new Solution()
-    solution.deliveryQueue.forEach((value, key) => {
-      let queue = Utils.deepCopy(value);
-      if(key == deleteKey){
-        queue.splice(deleteIndex, 1); 
-      }
-      if(key == insertKey){
-        queue.splice(insertIndex, 0, areaId);
-      }
-
-      result.addDeliveryQueue(key, queue);
-    });
-    return result;
-  }
-  // 模拟配送，用于计算子代的适应度和SCI
-  _private.simulate = (solution) => {
-    _private.resetData();
-
-    while (solution.deliveryQueue.size > 0) {
-      for (const [truckID, queue] of solution.deliveryQueue) {
-        // 获取救援车辆
-        let truck = _private.trucks.get(truckID);
-        // 获取受灾点
-        let areaId = queue.shift();
-        let area = _private.disasterAreas.get(areaId);
-        if (!area || area.isCompleted()) {
-          continue;
-        }
-        // 获取救援车辆到受灾点的行驶时间和到达时间
-        let travelTime = _private.navTool.getShortestTime(
-          truck.currentPos,
-          area.id,
-          truck.currentTime
-        );
-        let arrivalTime = Utils.addTime(truck.currentTime, travelTime);
-
-        // 执行配送
-        truck.delivery(area, arrivalTime);
-      }
-
-      // 检查救援车辆配送队列是否完成
-      solution.deliveryQueue.forEach((queue, truckID) => {
-        if (queue.length === 0) {
-          solution.deliveryQueue.delete(truckID);
-        }
-      });
-    }
-
-    return _private.getSolution();
-  };
-
   // 选择操作
   _private.select = (solutions, count) => {
     const populationSize = solutions.length;
@@ -491,56 +428,316 @@ function _initPrivateMembers(that) {
      // 将Set转换为数组，并使用map方法获取对应的solutions元素
      return [...selectedIndices].map(index => solutions[index]);
   }
+  // #endregion
 
-  // 模拟退火选择（Simulated Annealing Select）
-  _private.SASelect = (solutions, count) => {
-    // 初始化温度
-    let temperature = 1000;
-    // 初始化冷却因子
-    let coolingFactor = 0.99;
 
-    // 计算初始适应度总和
-    let totalFitness = 0;
-    solutions.forEach(item => {
-      totalFitness += item.fitness;
-    })
+  // 随机删除和插入
+  _private.randomDeleteAndInsert = (solution) => {
+    // 随机删除队列和位置
+    const deleteKey = Math.floor(Math.random() * _private.trucks.size);
+    const deleteQueue = solution.deliveryQueue.get(deleteKey)
+    const deleteIndex = Math.floor(Math.random() * deleteQueue.length);
+    const areaId = deleteQueue[deleteIndex]
 
-    // 计算初始概率
-    let initialProbability = 1;
+    // 随机插入队列和位置
+    const insertKey = Math.floor(Math.random() * _private.trucks.size);
+    const insertQueue = solution.deliveryQueue.get(insertKey)
+    const insertIndex = Math.floor(Math.random() * insertQueue.length);
 
-    // 初始化选择的索引集
-    let selectedIndices = new Set();
+    // 执行删除插入
+    let result = new Solution()
+    solution.deliveryQueue.forEach((value, key) => {
+      let queue = Utils.deepCopy(value);
+      if(key == deleteKey){
+        queue.splice(deleteIndex, 1); 
+      }
+      if(key == insertKey){
+        queue.splice(insertIndex, 0, areaId);
+      }
 
-    // 模拟退火选择
-    while(selectedIndices.size < count) {
-      // 生成一个0到totalFitness之间的随机数
-      const randomPoint = Math.random() * totalFitness;
+      result.addDeliveryQueue(key, queue);
+    });
+    return result;
+  }
 
-      // 默认设置为最后一个索引
-      let selectedIndex = populationSize - 1; 
-      for (let i = 0; i < populationSize; i++) {
-          if (cumulativeFitnesses[i] >= randomPoint) {
-              selectedIndex = i;
-              break;
+  // #region 对比算法2
+  // 破坏算子
+  _private.initDestroyOperater = () => {
+    _private.destroyOperator = new Map();
+    // 随机删除
+    let deleteByRandom = (solution) => {
+      let deleteTruckId;
+      let deleteAreaIndex;
+      let deleteAreaId;
+      
+      deleteTruckId = Math.floor(Math.random() * _private.trucks.size);
+      const deleteQueue = solution.deliveryQueue.get(deleteTruckId)
+      deleteAreaIndex = Math.floor(Math.random() * deleteQueue.length);
+      deleteAreaId = deleteQueue[deleteAreaIndex]
+
+      return {deleteTruckId, deleteAreaIndex, deleteAreaId}
+    }
+    _private.destroyOperator.set(deleteByRandom, 1);
+
+    // 基于需求的删除
+    let deleteByOpacity = (solution, random = false) =>{
+      let deleteTruckId;
+      let deleteAreaIndex;
+      let deleteAreaId;
+
+      // 找到最大需求的配送队列
+      let maxOpacity = 0;
+      for(const [truckId, queue] of solution.deliveryQueue){
+         let opacatiy = 0;
+         queue.forEach(areaId=>{
+           let area = _private.disasterAreas.get(areaId);
+           if(area){
+             opacatiy += area.total_demand;
+           }
+         })
+         if(opacatiy > maxOpacity){
+           maxOpacity = opacatiy;
+           deleteTruckId = truckId;
+         }
+      }
+
+      // 随机选取配送队列中的受灾区域，或者选取需求最大区域
+      if(random){
+        const deleteQueue = solution.deliveryQueue.get(deleteTruckId)
+        deleteAreaIndex = Math.floor(Math.random() * deleteQueue.length);
+        deleteAreaId = deleteQueue[deleteAreaIndex]
+      }
+      else{
+        maxOpacity = 0;
+        const deleteQueue = solution.deliveryQueue.get(deleteTruckId)
+        deleteQueue.forEach((areaId, index) => {
+          let area = _private.disasterAreas.get(areaId);
+          if(area && area.total_demand > maxOpacity){
+             maxOpacity = area.total_demand;
+             deleteAreaIndex = index;
+             deleteAreaId = areaId;
           }
+        })
+      }
+     
+      return {deleteTruckId, deleteAreaIndex, deleteAreaId}
+    }
+    _private.destroyOperator.set((solution)=>{return deleteByOpacity(solution, true)}, 1)
+    _private.destroyOperator.set((solution)=>{return deleteByOpacity(solution, false)}, 1)
+
+    // 基于时间的删除
+    let deleteByTime = (solution, random = false) =>{
+      let deleteTruckId;
+      let deleteAreaIndex;
+      let deleteAreaId;
+
+      // 找到完成时间最晚的配送队列
+      let latestTime = new Date(1900, 0, 1, 0, 0, 0);
+      for(const [truckId, queue] of solution.deliveryQueue){
+        let truck = _private.trucks.get(truckId);
+         if(truck.currentTime > latestTime){
+          latestTime = truck.currentTime;
+           deleteTruckId = truckId;
+         }
+      }
+      
+      // 随机选取配送队列中的受灾区域，或者选取需求最大区域
+      if(random){
+        const deleteQueue = solution.deliveryQueue.get(deleteTruckId)
+        deleteAreaIndex = Math.floor(Math.random() * deleteQueue.length);
+        deleteAreaId = deleteQueue[deleteAreaIndex]
+      }
+      else{
+        let maxOpacity = 0;
+        const deleteQueue = solution.deliveryQueue.get(deleteTruckId)
+        deleteQueue.forEach((areaId, index) => {
+          let area = _private.disasterAreas.get(areaId);
+          if(area && area.total_demand > maxOpacity){
+             maxOpacity = area.total_demand;
+             deleteAreaIndex = index;
+             deleteAreaId = areaId;
+          }
+        })
+      }
+     
+      return {deleteTruckId, deleteAreaIndex, deleteAreaId}
+    }
+    _private.destroyOperator.set((solution)=>{return deleteByTime(solution, true)}, 1)
+    _private.destroyOperator.set((solution)=>{return deleteByTime(solution, false)}, 1)
+  }
+  _private.getDestroyOperator = () => {
+    let count = 0;
+    for(let key of _private.destroyOperator.keys()){
+      count += _private.destroyOperator.get(key);
+    }
+    let probability = Math.random();
+    let sum = 0;
+    for(let key of _private.destroyOperator.keys()){
+      sum += _private.destroyOperator.get(key) / count;
+      if(sum >= probability){
+        return key;
+      }
+    }
+    return null;
+  }
+  // 恢复算子
+  _private.initRepairOperater = () => {
+    _private.repairOperator = new Map()
+    // 随机插入
+    let insertByRandom = (solution) =>{
+      let insertTruckId;
+      let insertAreaIndex;
+
+      insertTruckId = Math.floor(Math.random() * _private.trucks.size);
+      const insertQueue = solution.deliveryQueue.get(insertTruckId)
+      insertAreaIndex = Math.floor(Math.random() * insertQueue.length);
+
+      return {insertTruckId, insertAreaIndex}
+    }
+    _private.repairOperator.set(insertByRandom, 1);
+
+     // 基于需求的插入
+    let insertByOpacity = (solution) =>{
+      let insertTruckId;
+      let insertAreaIndex;
+
+      // 找到最小需求的配送队列
+      let minOpacity = 9999999;
+      for(const [truckId, queue] of solution.deliveryQueue){
+         let opacatiy = 0;
+         queue.forEach(areaId=>{
+           let area = _private.disasterAreas.get(areaId);
+           if(area){
+             opacatiy += area.total_demand;
+           }
+         })
+         if(opacatiy < minOpacity){
+           minOpacity = opacatiy;
+           insertTruckId = truckId;
+         }
       }
 
-      // 计算接受概率
-      let acceptanceProbability = Math.exp(-(selectedIndex - initialProbability) / temperature);
+      // 随机选取配送队列中的插入位置
+      const insertQueue = solution.deliveryQueue.get(insertTruckId)
+      insertAreaIndex = Math.floor(Math.random() * insertQueue.length);
+     
+      return {insertTruckId, insertAreaIndex}
+    }
+    _private.repairOperator.set(insertByOpacity, 1);
 
-      // 如果接受概率大于随机数，则选择该索引
-      if (acceptanceProbability > Math.random()) {
-          selectedIndices.add(selectedIndex);
+    // 基于时间的插入
+    let insertByTime = (solution) =>{
+      let insertTruckId;
+      let insertAreaIndex;
+
+      // 找到完成时间最早的配送队列
+      let earliestTime = new Date(2100, 0, 1, 0, 0, 0);
+      for(const [truckId, queue] of solution.deliveryQueue){
+        let truck = _private.trucks.get(truckId);
+         if(truck.currentTime < earliestTime){
+           earliestTime = truck.currentTime;
+           insertTruckId = truckId;
+         }
+      }
+      
+      // 随机选取配送队列中的插入位置
+      const insertQueue = solution.deliveryQueue.get(insertTruckId)
+      insertAreaIndex = Math.floor(Math.random() * insertQueue.length);  
+     
+      return {insertTruckId, insertAreaIndex}
+    }
+    _private.repairOperator.set(insertByTime, 1);
+  }
+  _private.getRepairOperator = () => {
+    let count = 0;
+    for(let key of _private.repairOperator.keys()){
+      count += _private.repairOperator.get(key);
+    }
+    let probability = Math.random();
+    let sum = 0;
+    for(let key of _private.repairOperator.keys()){
+      sum += _private.repairOperator.get(key) / count;
+      if(sum >= probability){
+        return key;
+      }
+    }
+    return null;
+  }
+
+  // 自适应大邻域搜索
+  _private.ALNS = (solution, destroyOperator, repairOperator) => {
+    let {deleteTruckId, deleteAreaIndex, deleteAreaId} = destroyOperator(solution);
+    let {insertTruckId, insertAreaIndex} = repairOperator(solution);
+
+    // 执行删除插入
+    let result = new Solution()
+    solution.deliveryQueue.forEach((value, key) => {
+      let queue = Utils.deepCopy(value);
+      if(key == deleteTruckId){
+        queue.splice(deleteAreaIndex, 1); 
+      }
+      if(key == insertTruckId){
+        queue.splice(insertAreaIndex, 0, deleteAreaId);
       }
 
-      // 降低温度
-      temperature *= coolingFactor;
+      result.addDeliveryQueue(key, queue);
+    });
+    return result;
+  }
+  // 模拟退火选择（Simulated Annealing Select）
+  _private.SASelect = (solution, child) => {
+    let currentEnergy = solution.total_sci;
+    let newEnergy = child.total_sci;
+    if(newEnergy < currentEnergy){
+      return true;
     }
 
-    // 将Set转换为数组，并使用map方法获取对应的solutions元素
-    return [...selectedIndices].map(index => solutions[index]);
+    // 计算接受概率
+    let temperature = _private.temperature; 
+    const acceptanceProbability = Math.exp((currentEnergy - newEnergy) / temperature);
+ 
+    // 随机决定是否接受更差的解
+    return Math.random() < acceptanceProbability;
   }
-  }
+  // #endregion
+
+
+  // 模拟配送，用于计算子代的适应度和SCI
+  _private.simulate = (solution) => {
+    _private.resetData();
+
+    while (solution.deliveryQueue.size > 0) {
+      for (const [truckID, queue] of solution.deliveryQueue) {
+        // 获取救援车辆
+        let truck = _private.trucks.get(truckID);
+        // 获取受灾点
+        let areaId = queue.shift();
+        let area = _private.disasterAreas.get(areaId);
+        if (!area || area.isCompleted()) {
+          continue;
+        }
+        // 获取救援车辆到受灾点的行驶时间和到达时间
+        let travelTime = _private.navTool.getShortestTime(
+          truck.currentPos,
+          area.id,
+          truck.currentTime
+        );
+        let arrivalTime = Utils.addTime(truck.currentTime, travelTime);
+
+        // 执行配送
+        truck.delivery(area, arrivalTime);
+      }
+
+      // 检查救援车辆配送队列是否完成
+      solution.deliveryQueue.forEach((queue, truckID) => {
+        if (queue.length === 0) {
+          solution.deliveryQueue.delete(truckID);
+        }
+      });
+    }
+
+    return _private.getSolution();
+  };
 
   // 重置数据
   _private.resetData = () => {
@@ -697,7 +894,7 @@ class VRPManager {
     return solutions[0];
   }
 
-  getBestSolutionByOther(){
+  getBestSolutionByDeleteAndInsert(){
     let _private = this[__.private];
     let solution = _private.generateBaseSolution();
 
@@ -717,6 +914,62 @@ class VRPManager {
     
     return solution
   }
+
+  getBestSolutionByALNS(){
+    let _private = this[__.private];
+    let solution;
+    let count = 6 // 模拟3个变异+3个交叉
+   
+    // 初始化种群
+    let solutions = [];
+    for(let i = 0; i < count; i++){
+      solution = _private.generateBaseSolution();
+      solutions.push(solution);
+    }
+
+    // 初始化算子
+    _private.initDestroyOperater();
+    _private.initRepairOperater();
+    // 初始化温度
+    _private.temperature = 100;
+    // 初始化冷却因子
+    _private.coolingFactor = 0.9;
+
+    // 迭代优化
+    let index = 0;
+    while(index < _private.config.maxIter){
+      for(let i = 0; i < count; i++){
+        solution = solutions[i];
+        // 获取破坏算子和修复算子,生成子代
+        let destroyOperator = _private.getDestroyOperator();
+        let repairOperator = _private.getRepairOperator(); 
+        let child = _private.ALNS(solution, destroyOperator, repairOperator)
+        child = _private.simulate(child);
+
+         // 模拟退火
+        if(_private.SASelect(solution, child)){
+          solutions[i] = child
+          // 更新破坏因子和修复因子的概率值
+          let value = _private.destroyOperator.get(destroyOperator)
+          _private.destroyOperator.set(destroyOperator, value + 1);
+          value = _private.repairOperator.get(repairOperator)
+          _private.repairOperator.set(repairOperator, value + 1);
+        };     
+      }
+
+      // 更新温度
+      _private.temperature *= _private.coolingFactor;
+
+      // 每次迭代后，选择最优解输出log
+      solution = _private.select(solutions, 1)[0];     
+      console.log(solution.total_sci) 
+
+      index++;
+    }
+    
+    return solution
+  }
+
 
   getNavTool() {
     let _private = this[__.private];
