@@ -305,7 +305,6 @@ function _initPrivateMembers(that) {
   // #region 遗传算法算子优化 
   // 交叉操作
   _private.crossover = (solution1, solution2) => {
-    debugger
     let result = new Solution();
 
     // 在solution1中随机选择一个救援车辆
@@ -841,6 +840,8 @@ class VRPManager {
   getBestSolution() {
     let _private = this[__.private];
     let solutions = _private.generateBaseSolutions();
+    solutions.sort((a, b) => a.total_sci - b.total_sci);
+    console.log('solution:', solutions[0])
 
     let index = 0;
     while(index < _private.config.maxIter){
@@ -927,13 +928,16 @@ class VRPManager {
       solutions.push(solution);
     }
 
+    solutions.sort((a, b) => a.total_sci - b.total_sci);
+    console.log('solution:', solutions[0])
+
     // 初始化算子
     _private.initDestroyOperater();
     _private.initRepairOperater();
     // 初始化温度
-    _private.temperature = 100;
+    _private.temperature = 10;
     // 初始化冷却因子
-    _private.coolingFactor = 0.9;
+    _private.coolingFactor = 0.5;
 
     // 迭代优化
     let index = 0;
@@ -961,8 +965,10 @@ class VRPManager {
       _private.temperature *= _private.coolingFactor;
 
       // 每次迭代后，选择最优解输出log
-      solution = _private.select(solutions, 1)[0];     
-      console.log(solution.total_sci) 
+      if(index % 2 == 0){
+        solutions.sort((a, b) => a.total_sci - b.total_sci);
+        console.log('times:',index,'solution:', solutions[0])
+      }
 
       index++;
     }
